@@ -5,7 +5,7 @@ This library simplifies the interaction between a generic microservice and the [
 ## Installation
 
 ```
-npm i --save @mia-platform-internal/flow-manager-client
+npm i --save @mia-platform/flow-manager-client
 ```
 
 ## Testing locally
@@ -76,7 +76,7 @@ producerConfig = {
 Example:
 
 ```javascript
-const { FMClientBuilder } = require('@mia-platform-internal/flow-manager-client')
+const { FMClientBuilder } = require('@mia-platform/flow-manager-client')
 
 const client = new FMClientBuilder(pinoLogger, kafkaConfig)
   .configureCommandsExecutor(commandsTopic, consumerConf)
@@ -177,7 +177,7 @@ Example of client building with metrics enabled:
 ```javascript
 const prometheusClient = require('prom-client')
 
-const { FMClientBuilder, getMetrics } = require('@mia-platform-internal/flow-manager-client')
+const { FMClientBuilder, getMetrics } = require('@mia-platform/flow-manager-client')
 
 const metrics = getMetrics(prometheusClient)
 
@@ -195,7 +195,7 @@ can directly expose the `getMetrics` function and find these metrics decorated
 in the service `customMetrics` object.
 
 ```javascript
-const { FMClientBuilder, getMetrics } = require('@mia-platform-internal/flow-manager-client')
+const { FMClientBuilder, getMetrics } = require('@mia-platform/flow-manager-client')
 
 const customService = require('@mia-platform/custom-plugin-lib')(
   { /* schema */ }
