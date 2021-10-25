@@ -1,0 +1,40 @@
+{
+  "name": "@mia-platform-internal/flow-manager-client",
+  "version": "1.0.0",
+  "description": "A library to simplify the interaction with the Flow Manager",
+  "license": "SEE LICENSE IN LICENSE",
+  "main": "index.js",
+  "scripts": {
+    "checkonly": "! grep -R '\\\\.only' tests/",
+    "coverage": "npm run unit -- --coverage-report=text-summary",
+    "postcoverage": "tap --coverage-report=lcov --no-browser",
+    "lint": "eslint . --ignore-path=.gitignore",
+    "test": "npm run lint && npm run unit && npm run checkonly",
+    "update-changelog": "node scripts/update-changelog.js ${npm_package_version}",
+    "unit": "tap -b tests/*.test.js tests/**/*.test.js",
+    "version": "npm run update-changelog && git add CHANGELOG.md"
+  },
+  "dependencies": {
+    "@mia-platform/kafkajs-pino-logger": "^1.0.0",
+    "ajv": "^8.5.0",
+    "kafkajs": "^1.15.0"
+  },
+  "devDependencies": {
+    "@mia-platform/eslint-config-mia": "^3.0.0",
+    "eslint": "^7.27.0",
+    "pino": "^6.11.3",
+    "pre-commit": "^1.2.2",
+    "sinon": "^10.0.0",
+    "sorted-json": "^0.2.6",
+    "tap": "^15.0.9"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "eslintConfig": {
+    "extends": "@mia-platform/eslint-config-mia"
+  },
+  "tap": {
+    "check-coverage": false
+  }
+}
