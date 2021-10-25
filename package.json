@@ -22,7 +22,7 @@
   "devDependencies": {
     "@mia-platform/eslint-config-mia": "^3.0.0",
     "eslint": "^8.1.0",
-    "pino": "^6.11.3",
+    "pino": "^7.0.4",
     "pre-commit": "^1.2.2",
     "sinon": "^11.1.2",
     "sorted-json": "^0.2.6",
