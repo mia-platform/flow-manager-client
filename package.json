@@ -16,17 +16,17 @@
   },
   "dependencies": {
     "@mia-platform/kafkajs-pino-logger": "^1.0.0",
-    "ajv": "^8.5.0",
+    "ajv": "^8.6.3",
     "kafkajs": "^1.15.0"
   },
   "devDependencies": {
     "@mia-platform/eslint-config-mia": "^3.0.0",
-    "eslint": "^7.27.0",
+    "eslint": "^8.1.0",
     "pino": "^6.11.3",
     "pre-commit": "^1.2.2",
-    "sinon": "^10.0.0",
+    "sinon": "^11.1.2",
     "sorted-json": "^0.2.6",
-    "tap": "^15.0.9"
+    "tap": "^15.0.10"
   },
   "engines": {
     "node": ">=14"

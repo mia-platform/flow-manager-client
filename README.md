@@ -10,8 +10,31 @@ npm i --save @mia-platform-internal/flow-manager-client
 
 ## Testing locally
 
+Login to mia-platform registry
+
 ```
-docker run --rm -d --memory=500mb --name=kafka -e ADVERTISED_LISTENERS='PLAINTEXT://127.0.0.1:9092,INTERNAL://localhost:9093' -e LISTENERS='PLAINTEXT://0.0.0.0:9092,INTERNAL://0.0.0.0:9093' -e SECURITY_PROTOCOL_MAP='PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT' -e INTER_BROKER='INTERNAL' -p 2181:2181 -p 443:9092 -p 9092:9092 -p 9093:9093 nexus.mia-platform.eu/ci/kafka:1.0.1
+docker login nexus.mia-platform.eu
+```
+
+Pull the image
+```
+nexus.mia-platform.eu/ci/kafka:1.0.1
+```
+
+Now you can run this command locally
+```
+docker run --rm -d \
+--memory=500mb \
+--name=kafka \
+-e ADVERTISED_LISTENERS='PLAINTEXT://127.0.0.1:9092,INTERNAL://localhost:9093' \
+-e LISTENERS='PLAINTEXT://0.0.0.0:9092,INTERNAL://0.0.0.0:9093' \
+-e SECURITY_PROTOCOL_MAP='PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT' \
+-e INTER_BROKER='INTERNAL' \
+-p 2181:2181 \
+-p 443:9092 \
+-p 9092:9092 \
+-p 9093:9093 \
+nexus.mia-platform.eu/ci/kafka:1.0.1
 
 npm t
 ```
