@@ -1,5 +1,5 @@
 {
-  "name": "@mia-platform-internal/flow-manager-client",
+  "name": "@mia-platform/flow-manager-client",
   "version": "1.0.0",
   "description": "A library to simplify the interaction with the Flow Manager",
   "license": "SEE LICENSE IN LICENSE",
