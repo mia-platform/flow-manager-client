@@ -1,5 +1,11 @@
 # Flow Manager Client
 
+[![Build Status][github-actions-svg]][github-actions]
+[![javascript style guide][standard-mia-svg]][standard-mia]
+[![Coverage Status][coverall-svg]][coverall-io]
+
+</div>
+
 This library simplifies the interaction between a generic microservice and the [Flow Manager](https://git.tools.mia-platform.eu/platform/core/flow-manager) service.
 
 ## Installation
