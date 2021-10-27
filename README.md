@@ -241,7 +241,7 @@ module.exports.getMetrics = getMetrics
 [standard-mia-svg]: https://img.shields.io/badge/code_style-standard--mia-orange.svg
 [standard-mia]: https://github.com/mia-platform/eslint-config-mia
 
-[coverall-svg]: https://coveralls.io/repos/github/mia-platform/flow-manager-client/badge.svg?branch=master
+[coverall-svg]: https://coveralls.io/repos/github/mia-platform/flow-manager-client/badge.svg?branch=main
 [coverall-io]: https://coveralls.io/github/mia-platform/flow-manager-client
 
 [github-actions-svg]: https://github.com/mia-platform/flow-manager-client/actions/workflows/node.js.yml/badge.svg
