@@ -1,4 +1,12 @@
+<div align="center">
+
 # Flow Manager Client
+
+[![Build Status][github-actions-svg]][github-actions]
+[![javascript style guide][standard-mia-svg]][standard-mia]
+[![Coverage Status][coverall-svg]][coverall-io]
+
+</div>
 
 This library simplifies the interaction between a generic microservice and the [Flow Manager](https://docs.mia-platform.eu/docs/runtime_suite/flow-manager-service/overview) service.
 
@@ -228,3 +236,13 @@ module.exports = customService(async function index(service) {
 // to include further metrics to be used in service
 module.exports.getMetrics = getMetrics
 ```
+
+
+[standard-mia-svg]: https://img.shields.io/badge/code_style-standard--mia-orange.svg
+[standard-mia]: https://github.com/mia-platform/eslint-config-mia
+
+[coverall-svg]: https://coveralls.io/repos/github/mia-platform/flow-manager-client/badge.svg?branch=main
+[coverall-io]: https://coveralls.io/github/mia-platform/flow-manager-client
+
+[github-actions-svg]: https://github.com/mia-platform/flow-manager-client/actions/workflows/node.js.yml/badge.svg
+[github-actions]: https://github.com/mia-platform/flow-manager-client/actions
