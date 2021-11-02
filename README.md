@@ -21,7 +21,7 @@ npm i --save @mia-platform/flow-manager-client
 #### Create a network connection
 
 ```
-docker network create app-tier --driver bridge
+docker network create app --driver bridge
 ```
 
 #### Pull the images
@@ -35,7 +35,7 @@ docker pull bitnami/kafka
 docker run -d --rm --name zookeeper --network=app -e ALLOW_ANONYMOUS_LOGIN=yes -p 2180:2181 bitnami/zookeeper
 
 docker run --rm \
-  --network app-tier \
+  --network app \
   --name=kafka \
   -e KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181 \
   -e KAFKA_CFG_ADVERTISED_LISTENERS='PLAINTEXT://127.0.0.1:9092,INTERNAL://localhost:9093' \
