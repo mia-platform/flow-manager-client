@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- moved `JOIN_WAIT_TIME` argument in the proper location, so that it is provided correctly to the `setInterval` function
+
+### Changed
+
+- updated test to cover the usage of `getMetrics` function
+- updated library dependencies
+- updated nodejs version matrix in Github Action definition
+
 ## [1.0.0] 2021-05-24
 
 ### Initial Release
