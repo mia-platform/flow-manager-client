@@ -25,8 +25,8 @@ function getConfig() {
     // General
     LOG_LEVEL: 'silent',
     // Kafka
-    KAFKA_CLIENT_ID: `signer-adapter.local-${randomString(20)}`,
-    KAFKA_GROUP_ID: `signer-adapter.local-${randomString(20)}`,
+    KAFKA_CLIENT_ID: `client.local-${randomString(20)}`,
+    KAFKA_GROUP_ID: `client.local-${randomString(20)}`,
     KAFKA_BROKERS_LIST: KAFKA_HOSTS_CI ? KAFKA_HOSTS_CI : 'localhost:9092',
     KAFKA_CMD_TOPIC: `commands.local-${randomString(20)}`,
     KAFKA_EVN_TOPIC: `events.local-${randomString(20)}`,
