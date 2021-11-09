@@ -14,7 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - updated test to cover the usage of `getMetrics` function
 - updated library dependencies
-- updated nodejs version matrix in Github Action definition
+
+### Added
+
+- Added new nodejs version matrix in Github Action definition
 
 ## [1.0.0] 2021-05-24
 
