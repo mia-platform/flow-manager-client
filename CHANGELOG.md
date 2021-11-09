@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] 2021-11-09
+
 ### Fixed
 
 - moved `JOIN_WAIT_TIME` argument in the proper location, so that it is provided correctly to the `setInterval` function
