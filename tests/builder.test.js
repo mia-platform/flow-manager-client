@@ -22,7 +22,7 @@ const sinon = require('sinon')
 
 const getConfig = require('./getConfig')
 
-const { FMClientBuilder } = require('../lib/builder')
+const { FMClientBuilder, getMetrics } = require('../lib/builder')
 
 tap.test('Flow Manager Client Builder', async t => {
   const conf = getConfig()
@@ -48,15 +48,18 @@ tap.test('Flow Manager Client Builder', async t => {
   })
 
   t.test('initialize a client with one components and metrics', async assert => {
-    const fakeMetrics = {
-      commandsExecuted: { inc: sinon.fake() },
-      eventsEmitted: { inc: sinon.fake() },
+    const fakePrometheus = {
+      Counter: class {
+        constructor() {
+          this.inc = sinon.fake()
+        }
+      },
     }
 
     const log = pino({ level: conf.LOG_LEVEL || 'silent' })
     const client = new FMClientBuilder(log, kafkaConf)
       .configureEventsEmitter(conf.KAFKA_EVN_TOPIC, producerConf)
-      .enableMetrics(fakeMetrics)
+      .enableMetrics(getMetrics(fakePrometheus))
       .build()
 
     assert.equal(client.consumer, undefined, 'consumer initialized')
