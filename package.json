@@ -9,7 +9,8 @@
     "coverage": "npm run unit -- --coverage-report=text-summary",
     "postcoverage": "tap --coverage-report=lcov --no-browser",
     "lint": "eslint . --ignore-path=.gitignore",
-    "test": "npm run lint && npm run unit && npm run checkonly",
+    "test": "npm run lint && npm run unit && npm run checkonly && npm run typescript",
+    "typescript": "tsc --project ./tests/types/tsconfig.json",
     "update-changelog": "node scripts/update-changelog.js ${npm_package_version}",
     "unit": "tap -b tests/*.test.js tests/**/*.test.js",
     "version": "npm run update-changelog && git add CHANGELOG.md"
@@ -26,7 +27,8 @@
     "pre-commit": "^1.2.2",
     "sinon": "^12.0.1",
     "sorted-json": "^0.2.6",
-    "tap": "^15.0.10"
+    "tap": "^15.0.10",
+    "typescript": "^4.5.2"
   },
   "engines": {
     "node": ">=14"
