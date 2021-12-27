@@ -11,7 +11,7 @@
     "postcoverage": "tap --coverage-report=lcov --no-browser",
     "lint": "eslint . --ignore-path=.gitignore",
     "test": "npm run lint && npm run unit && npm run checkonly && npm run typescript",
-    "typescript": "tsc --project ./tests/types/tsconfig.json",
+    "typescript": "tsd",
     "update-changelog": "node scripts/update-changelog.js ${npm_package_version}",
     "unit": "tap -b tests/*.test.js tests/**/*.test.js",
     "version": "npm run update-changelog && git add CHANGELOG.md"
@@ -29,6 +29,7 @@
     "sinon": "^12.0.1",
     "sorted-json": "^0.2.6",
     "tap": "^15.0.10",
+    "tsd": "^0.19.0",
     "typescript": "^4.5.2"
   },
   "engines": {
@@ -39,5 +40,8 @@
   },
   "tap": {
     "check-coverage": false
+  },
+  "tsd": {
+    "directory": "./tests/types"
   }
 }

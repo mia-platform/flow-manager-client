@@ -14,6 +14,7 @@
 * limitations under the License.
 */
 
+import {expectType} from 'tsd'
 import {
   getMetrics,
   FMClientBuilder,
@@ -40,15 +41,9 @@ const kafkaConfig: KafkaConfig = {
 }
 
 const ClientBuilder = new FMClientBuilder(log, kafkaConfig)
-console.log(ClientBuilder.log)
-console.log(ClientBuilder.metrics)
-console.log(ClientBuilder.kafkaConfig.clientId)
-console.log(ClientBuilder.kafkaConfig.brokers)
-console.log(ClientBuilder.kafkaConfig.authMechanism)
-console.log(ClientBuilder.kafkaConfig.username)
-console.log(ClientBuilder.kafkaConfig.password)
-console.log(ClientBuilder.kafkaConfig.connectionTimeout)
-console.log(ClientBuilder.kafkaConfig.authenticationTimeout)
+expectType<Record<string, any>>(ClientBuilder.log)
+expectType<Record<string, any>>(ClientBuilder.metrics)
+expectType<KafkaConfig>(ClientBuilder.kafkaConfig)
 
 const commandsTopic = 'commands-topic'
 const consumerConfig: ConsumerConfig = {
@@ -72,8 +67,8 @@ ClientBuilder
   .enableMetrics(prometheusMetrics)
 
 const Client = ClientBuilder.build()
-console.log(Client.log)
-console.log(Client.metrics)
+expectType<Record<string, any>>(Client.log)
+expectType<Record<string, any>>(Client.metrics)
 
 Client.isHealthy()
 
