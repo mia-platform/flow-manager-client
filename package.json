@@ -4,6 +4,7 @@
   "description": "A library to simplify the interaction with the Flow Manager",
   "license": "SEE LICENSE IN LICENSE",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "checkonly": "! grep -R '\\\\.only' tests/",
     "coverage": "npm run unit -- --coverage-report=text-summary",
