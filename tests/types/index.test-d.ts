@@ -78,7 +78,17 @@ Client.start()
 
 Client.stop()
 
+type Payload = {
+  foo: string
+}
+
+const commandExecutorWithGeneric: CommandExecutor<Payload> = (sagaId, payload, eventEmitter) => {
+  expectType<Payload>(payload)
+  eventEmitter('event', {foo: 'bar'})
+}
+
 const commandExecutor: CommandExecutor = (sagaId, payload, eventEmitter) => {
+  expectType<Record<string, any>>(payload)
   eventEmitter('event', {foo: 'bar'})
 }
 
@@ -86,6 +96,7 @@ const errorHandler: CommandErrorHandler = (sagaId, error, commitCallback) => {
   commitCallback()
 }
 
+Client.onCommand<Payload>('command', commandExecutorWithGeneric)
 Client.onCommand('command', commandExecutor)
 Client.onCommand('command', commandExecutor, errorHandler)
 

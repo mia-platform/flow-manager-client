@@ -63,9 +63,11 @@ export class FMClientBuilder {
 //
 // Client
 //
+export type PayloadGeneric<T = Record<string, any>> = T
+
 export type EventEmitter = (event: string, metadata?: Record<string, any>) => Promise<void>
 
-export type CommandExecutor = (sagaId: string, payload: Record<string, any>, eventEmitter: EventEmitter) => void
+export type CommandExecutor<Payload extends PayloadGeneric = PayloadGeneric> = (sagaId: string, payload: Payload, eventEmitter: EventEmitter) => void
 
 export type CommitCallback = () => Promise<void>
 
@@ -83,7 +85,7 @@ export interface FlowManagerClient {
 
   stop(): Promise<void>
 
-  onCommand(command: string, executor: CommandExecutor, errorHandler?: CommandErrorHandler): void
+  onCommand<Payload extends PayloadGeneric = PayloadGeneric>(command: string, executor: CommandExecutor<Payload>, errorHandler?: CommandErrorHandler): void
 
   emit(event: string, sagaId: string, metadata?: Record<string, any>): Promise<void>
 }
