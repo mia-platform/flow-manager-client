@@ -153,7 +153,7 @@ const client = new FMClientBuilder(pinoLogger, kafkaConfig)
 // expose metrics afterwards
 ```
 
-**Note:** users of [`custom-plugin-lib`](https://github.com/mia-platform/custom-plugin-lib)
+**Note:** users of [`custom-plugin-lib`](https://docs.mia-platform.eu/docs/runtime_suite_libraries/custom-plugin-lib/apidoc)
 can directly expose the `getMetrics` function and find these metrics decorated
 in the service `customMetrics` object.
 
