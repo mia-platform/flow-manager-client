@@ -97,7 +97,7 @@ parsed as a Flow Manager message (e.g. the key does not contain any _sagaId_ or 
   This is achieved by calling the `emitEvent` function given as argument of the `commandFunction`.
   Its signature is `emitEvent(event, metadata)`. In this case `sagaId` is not needed since it exploits the same of executed command. 
 - by default error risen during the processing step cause messages to be retried until the
-execution is successful. This behaviour can be fine in case the command action is _idempotent_
+execution is successful. This behavior can be fine in case the command action is _idempotent_
   or its repetition does not cause potential conflicts.
   In order to change it and *skip messages* whose processing throw an error,
   it is sufficient to call the `commit` function within the error handler.
