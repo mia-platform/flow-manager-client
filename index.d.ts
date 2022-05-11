@@ -67,7 +67,9 @@ export type PayloadGeneric<T = Record<string, any>> = T
 
 export type EventEmitter = (event: string, metadata?: Record<string, any>) => Promise<void>
 
-export type CommandExecutor<Payload extends PayloadGeneric = PayloadGeneric> = (sagaId: string, payload: Payload, eventEmitter: EventEmitter) => void
+export type Heartbeat = () => Promise<void>
+
+export type CommandExecutor<Payload extends PayloadGeneric = PayloadGeneric> = (sagaId: string, payload: Payload, eventEmitter: EventEmitter, heartbeat: Heartbeat) => void
 
 export type CommitCallback = () => Promise<void>
 
