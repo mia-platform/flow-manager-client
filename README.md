@@ -140,7 +140,7 @@ It is also possible to define an error handler which takes as input the processi
 
 Here is reported the signature of the two methods associated to a command:
 
-- `commandFunction -> [async] Function(sagaId: string, commandMetadata: Object, emitEvent: function)`
+- `commandFunction -> [async] Function(sagaId: string, commandMetadata: Object, emitEvent: function, heartbeat: function)`
 - `errorHandler -> [async] Function(sagaId: string, error: Error, commit: async Function)`
 
 **Notes:**
