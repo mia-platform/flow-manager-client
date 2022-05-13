@@ -1,6 +1,6 @@
 {
   "name": "@mia-platform/flow-manager-client",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A library to simplify the interaction with the Flow Manager",
   "license": "SEE LICENSE IN LICENSE",
   "main": "index.js",
