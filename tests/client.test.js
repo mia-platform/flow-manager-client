@@ -93,8 +93,8 @@ tap.test('Flow Manager Client', async t => {
       assert.ok(fakeExecutor.calledWith(sagaId, payload))
 
       const consumerOffsets = await getConsumerOffsets(conf.KAFKA_GROUP_ID, topicsMap.cmd)
-      assert.equal(consumerOffsets[0].partitions.length, 1, 'Only one partition is available')
-      assert.equal(consumerOffsets[0].partitions[0].offset, expectedConsumerOffset, `First message to be processed and committed, actual: ${consumerOffsets[0].offset}`)
+      assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
+      assert.equal(consumerOffsets[0].offset, expectedConsumerOffset, 'First message to be processed and committed')
 
       assert.end()
     })
@@ -118,8 +118,8 @@ tap.test('Flow Manager Client', async t => {
       assert.ok(fakeExecutor.notCalled, 'No command requested to be executed')
 
       const consumerOffsets = await getConsumerOffsets(conf.KAFKA_GROUP_ID, topicsMap.cmd)
-      assert.equal(consumerOffsets[0].partitions.length, 1, 'Only one partition is available')
-      assert.equal(consumerOffsets[0].partitions[0].offset, expectedConsumerOffset, 'Wrong Message skipped and committed')
+      assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
+      assert.equal(consumerOffsets[0].offset, expectedConsumerOffset, 'Wrong Message skipped and committed')
 
       assert.end()
     })
@@ -143,8 +143,8 @@ tap.test('Flow Manager Client', async t => {
       assert.ok(fakeExecutor.notCalled, 'No command requested to be executed')
 
       const consumerOffsets = await getConsumerOffsets(conf.KAFKA_GROUP_ID, topicsMap.cmd)
-      assert.equal(consumerOffsets[0].partitions.length, 1, 'Only one partition is available')
-      assert.equal(consumerOffsets[0].partitions[0].offset, expectedConsumerOffset, 'Wrong Message skipped and committed')
+      assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
+      assert.equal(consumerOffsets[0].offset, expectedConsumerOffset, 'Wrong Message skipped and committed')
 
       assert.end()
     })
@@ -183,8 +183,8 @@ tap.test('Flow Manager Client', async t => {
       assert.ok(fakeExecutor.calledWith(sagaId, payload))
 
       const consumerOffsets = await getConsumerOffsets(conf.KAFKA_GROUP_ID, topicsMap.cmd)
-      assert.equal(consumerOffsets[0].partitions.length, 1, 'Only one partition is available')
-      assert.equal(consumerOffsets[0].partitions[0].offset, expectedConsumerOffset,
+      assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
+      assert.equal(consumerOffsets[0].offset, expectedConsumerOffset,
         `Message is committed anyway, since the error handler returns true (ok to skip this message)`)
 
       assert.end()
@@ -219,8 +219,8 @@ tap.test('Flow Manager Client', async t => {
       assert.ok(fakeExecutor.calledWith(sagaId, payload))
 
       const consumerOffsets = await getConsumerOffsets(conf.KAFKA_GROUP_ID, topicsMap.cmd)
-      assert.equal(consumerOffsets[0].partitions.length, 1, 'Only one partition is available')
-      assert.equal(consumerOffsets[0].partitions[0].offset, expectedConsumerOffset,
+      assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
+      assert.equal(consumerOffsets[0].offset, expectedConsumerOffset,
         'Error processing message -> offset has not changed from previous value')
 
       assert.end()
