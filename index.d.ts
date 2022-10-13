@@ -30,6 +30,7 @@ export interface KafkaConfig {
   password?: string
   connectionTimeout?: number
   authenticationTimeout?: number
+  connectionRetries?: number
 }
 
 export interface ConsumerConfig {
