@@ -411,7 +411,7 @@ tap.test('Flow Manager Client', async t => {
     assert.equal(client.isReady(), true, 'Client started')
 
     await client.stop()
-    await sleep(300)
+    await sleep(5000)
 
     assert.equal(client.isHealthy(), false, 'Client stopped')
     assert.equal(client.isReady(), false, 'Client stopped')
