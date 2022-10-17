@@ -29,7 +29,7 @@ jobs:
       - run: npm ci
       - run: npm run build --if-present
 
-      - run: docker network create app --driver host
+      - run: docker network create app --driver overlay
 
       - run: docker pull bitnami/zookeeper:3.6.3-debian-11-r49
       - run: docker run -d --rm --name zookeeper --network=app -e ALLOW_ANONYMOUS_LOGIN=yes -p 2180:2181 bitnami/zookeeper:3.6.3-debian-11-r49
