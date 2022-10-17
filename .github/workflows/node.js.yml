@@ -10,8 +10,8 @@ on:
   pull_request:
     branches: [ main ]
 
-env:
-  KAFKA_HOSTS_CI: kafka:9092
+# env:
+#   KAFKA_HOSTS_CI: kafka:9092
 
 jobs:
   build:
