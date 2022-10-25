@@ -19,6 +19,7 @@
 const tap = require('tap')
 const pino = require('pino')
 const sinon = require('sinon')
+const crypto = require('crypto')
 
 const getConfig = require('./getConfig')
 
@@ -31,7 +32,7 @@ tap.test('Flow Manager Client Builder', async t => {
     brokers: conf.KAFKA_BROKERS_LIST,
   }
   const consumerConf = {
-    groupId: conf.KAFKA_GROUP_ID,
+    groupId: `${conf.KAFKA_GROUP_ID}_${crypto.randomBytes(12).toString('hex')}`,
   }
   const producerConf = {}
 
@@ -41,6 +42,9 @@ tap.test('Flow Manager Client Builder', async t => {
       .configureCommandsExecutor(conf.KAFKA_CMD_TOPIC, consumerConf)
       .configureEventsEmitter(conf.KAFKA_EVN_TOPIC, producerConf)
       .build()
+    assert.teardown(async() => {
+      await client.stop()
+    })
 
     assert.not(client.consumer, undefined, 'consumer initialized')
     assert.not(client.producer, undefined, 'producer initialized')
@@ -61,6 +65,9 @@ tap.test('Flow Manager Client Builder', async t => {
       .configureEventsEmitter(conf.KAFKA_EVN_TOPIC, producerConf)
       .enableMetrics(getMetrics(fakePrometheus))
       .build()
+    assert.teardown(async() => {
+      await client.stop()
+    })
 
     assert.equal(client.consumer, undefined, 'consumer initialized')
     assert.not(client.producer, undefined, 'producer initialized')

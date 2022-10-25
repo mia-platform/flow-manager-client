@@ -19,6 +19,7 @@
 const tap = require('tap')
 const pino = require('pino')
 const sinon = require('sinon')
+const crypto = require('crypto')
 
 const kafkaCommon = require('./kafkaTestsHelpers')
 const { sleep, assertMessages } = kafkaCommon
@@ -37,7 +38,8 @@ tap.test('Flow Manager Client', async t => {
   } = await kafkaCommon.initializeKafkaClient(conf)
 
   const kafkaConf = { clientId: conf.KAFKA_CLIENT_ID, brokers: conf.KAFKA_BROKERS_LIST }
-  const consumerConf = { groupId: conf.KAFKA_GROUP_ID }
+  const consumerGroup = `${conf.KAFKA_GROUP_ID}_${crypto.randomBytes(12).toString('hex')}`
+  const consumerConf = { groupId: consumerGroup }
 
   t.teardown(async() => { await kafkaTeardown() })
 
@@ -92,7 +94,7 @@ tap.test('Flow Manager Client', async t => {
       assert.ok(fakeExecutor.calledOnce, 'Only one command has been received')
       assert.ok(fakeExecutor.calledWith(sagaId, payload))
 
-      const consumerOffsets = await getConsumerOffsets(conf.KAFKA_GROUP_ID, topicsMap.cmd)
+      const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
       assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
       assert.equal(consumerOffsets[0].offset, expectedConsumerOffset, 'First message to be processed and committed')
 
@@ -117,7 +119,7 @@ tap.test('Flow Manager Client', async t => {
       await sleep(300)
       assert.ok(fakeExecutor.notCalled, 'No command requested to be executed')
 
-      const consumerOffsets = await getConsumerOffsets(conf.KAFKA_GROUP_ID, topicsMap.cmd)
+      const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
       assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
       assert.equal(consumerOffsets[0].offset, expectedConsumerOffset, 'Wrong Message skipped and committed')
 
@@ -142,7 +144,7 @@ tap.test('Flow Manager Client', async t => {
       await sleep(300)
       assert.ok(fakeExecutor.notCalled, 'No command requested to be executed')
 
-      const consumerOffsets = await getConsumerOffsets(conf.KAFKA_GROUP_ID, topicsMap.cmd)
+      const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
       assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
       assert.equal(consumerOffsets[0].offset, expectedConsumerOffset, 'Wrong Message skipped and committed')
 
@@ -182,7 +184,7 @@ tap.test('Flow Manager Client', async t => {
       assert.ok(fakeExecutor.calledOnce, 'Only one command has been received')
       assert.ok(fakeExecutor.calledWith(sagaId, payload))
 
-      const consumerOffsets = await getConsumerOffsets(conf.KAFKA_GROUP_ID, topicsMap.cmd)
+      const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
       assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
       assert.equal(consumerOffsets[0].offset, expectedConsumerOffset,
         `Message is committed anyway, since the error handler returns true (ok to skip this message)`)
@@ -218,7 +220,7 @@ tap.test('Flow Manager Client', async t => {
       assert.ok(fakeExecutor.calledOnce, 'Only one command has been received')
       assert.ok(fakeExecutor.calledWith(sagaId, payload))
 
-      const consumerOffsets = await getConsumerOffsets(conf.KAFKA_GROUP_ID, topicsMap.cmd)
+      const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
       assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
       assert.equal(consumerOffsets[0].offset, expectedConsumerOffset,
         'Error processing message -> offset has not changed from previous value')
@@ -408,8 +410,11 @@ tap.test('Flow Manager Client', async t => {
     assert.equal(client.isHealthy(), true, 'Client started')
     assert.equal(client.isReady(), true, 'Client started')
 
-    await client.stop()
-    await sleep(300)
+    try {
+      await client.stop()
+    } catch (error) {
+      assert.notOk(true, `Error stopping the client: ${error}`)
+    }
 
     assert.equal(client.isHealthy(), false, 'Client stopped')
     assert.equal(client.isReady(), false, 'Client stopped')
