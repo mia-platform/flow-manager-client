@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.4] 2022-10-26
+
 ### Changed
 
 - client `retry.retries` is now configurable with default 5
