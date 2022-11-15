@@ -101,346 +101,346 @@ tap.test('Flow Manager Client', async t => {
       assert.end()
     })
 
-    t.test('execute command - missing sagaId - skip it', async assert => {
-      const command = 'performActionWrongMessage'
-      const sagaId = null
-      const expectedConsumerOffset = '2'
-
-      const message = {
-        key: sagaId,
-        value: 'not important',
-      }
-      const fakeExecutor = sinon.fake()
-
-      client.onCommand(command, fakeExecutor)
-
-      await commandIssuer.send({ topic: topicsMap.cmd, messages: [message] })
-
-      await sleep(300)
-      assert.ok(fakeExecutor.notCalled, 'No command requested to be executed')
-
-      const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
-      assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
-      assert.equal(consumerOffsets[0].offset, expectedConsumerOffset, 'Wrong Message skipped and committed')
-
-      assert.end()
-    })
-
-    t.test('execute command - wrong command message - skip it', async assert => {
-      const command = 'performActionWrongMessage'
-      const sagaId = '70b85bbb-7c83-465a-9f41-9850015c363f'
-      const expectedConsumerOffset = '3'
-
-      const message = {
-        key: sagaId,
-        value: '<this is not : JSON parsable }',
-      }
-      const fakeExecutor = sinon.fake()
-
-      client.onCommand(command, fakeExecutor)
-
-      await commandIssuer.send({ topic: topicsMap.cmd, messages: [message] })
-
-      await sleep(300)
-      assert.ok(fakeExecutor.notCalled, 'No command requested to be executed')
-
-      const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
-      assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
-      assert.equal(consumerOffsets[0].offset, expectedConsumerOffset, 'Wrong Message skipped and committed')
-
-      assert.end()
-    })
-
-    t.test('execute command - generate error - error handler exists and decide to skip message', async assert => {
-      const command = 'performActionWithErrorHandler'
-      const sagaId = '119d6429-ab96-4680-8064-8de08969ed0f'
-      const payload = { msg: 'command processing generates error' }
-      const expectedConsumerOffset = '4'
-
-      const message = {
-        key: sagaId,
-        value: JSON.stringify({
-          messageLabel: command,
-          messagePayload: payload,
-        }),
-      }
-      const fakeExecutor = sinon.fake.throws()
-      const fakeErrorHandler = (sagaId, error, commitMessage) => {
-        // calling the second parameter allows to commit
-        // (and therefore skip) current message
-        return commitMessage()
-      }
-
-      client.onCommand(command, fakeExecutor, fakeErrorHandler)
-
-      await commandIssuer.send({ topic: topicsMap.cmd, messages: [message] })
-
-      // wait that the message has been received and processed
-      do {
-        await sleep(300)
-      }
-      while (fakeExecutor.callCount < 1)
-
-      assert.ok(fakeExecutor.calledOnce, 'Only one command has been received')
-      assert.ok(fakeExecutor.calledWith(sagaId, payload))
-
-      const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
-      assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
-      assert.equal(consumerOffsets[0].offset, expectedConsumerOffset,
-        `Message is committed anyway, since the error handler returns true (ok to skip this message)`)
-
-      assert.end()
-    })
-
-    t.test('execute command - generate error - no error handler', async assert => {
-      const command = 'performActionNoErrorHandler'
-      const sagaId = '0cc05ec1-edb0-4b80-abc0-e5183f92b26d'
-      const payload = { msg: 'command processing generates error' }
-      const expectedConsumerOffset = '4'
-
-      const message = {
-        key: sagaId,
-        value: JSON.stringify({
-          messageLabel: command,
-          messagePayload: payload,
-        }),
-      }
-      const fakeExecutor = sinon.fake.throws()
-
-      client.onCommand(command, fakeExecutor)
-
-      await commandIssuer.send({ topic: topicsMap.cmd, messages: [message] })
-
-      // wait that the message has been received and processed
-      do {
-        await sleep(300)
-      }
-      while (fakeExecutor.callCount < 1)
-
-      assert.ok(fakeExecutor.calledOnce, 'Only one command has been received')
-      assert.ok(fakeExecutor.calledWith(sagaId, payload))
-
-      const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
-      assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
-      assert.equal(consumerOffsets[0].offset, expectedConsumerOffset,
-        'Error processing message -> offset has not changed from previous value')
-
-      assert.end()
-    })
+    // t.test('execute command - missing sagaId - skip it', async assert => {
+    //   const command = 'performActionWrongMessage'
+    //   const sagaId = null
+    //   const expectedConsumerOffset = '2'
+    //
+    //   const message = {
+    //     key: sagaId,
+    //     value: 'not important',
+    //   }
+    //   const fakeExecutor = sinon.fake()
+    //
+    //   client.onCommand(command, fakeExecutor)
+    //
+    //   await commandIssuer.send({ topic: topicsMap.cmd, messages: [message] })
+    //
+    //   await sleep(300)
+    //   assert.ok(fakeExecutor.notCalled, 'No command requested to be executed')
+    //
+    //   const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
+    //   assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
+    //   assert.equal(consumerOffsets[0].offset, expectedConsumerOffset, 'Wrong Message skipped and committed')
+    //
+    //   assert.end()
+    // })
+    //
+    // t.test('execute command - wrong command message - skip it', async assert => {
+    //   const command = 'performActionWrongMessage'
+    //   const sagaId = '70b85bbb-7c83-465a-9f41-9850015c363f'
+    //   const expectedConsumerOffset = '3'
+    //
+    //   const message = {
+    //     key: sagaId,
+    //     value: '<this is not : JSON parsable }',
+    //   }
+    //   const fakeExecutor = sinon.fake()
+    //
+    //   client.onCommand(command, fakeExecutor)
+    //
+    //   await commandIssuer.send({ topic: topicsMap.cmd, messages: [message] })
+    //
+    //   await sleep(300)
+    //   assert.ok(fakeExecutor.notCalled, 'No command requested to be executed')
+    //
+    //   const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
+    //   assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
+    //   assert.equal(consumerOffsets[0].offset, expectedConsumerOffset, 'Wrong Message skipped and committed')
+    //
+    //   assert.end()
+    // })
+    //
+    // t.test('execute command - generate error - error handler exists and decide to skip message', async assert => {
+    //   const command = 'performActionWithErrorHandler'
+    //   const sagaId = '119d6429-ab96-4680-8064-8de08969ed0f'
+    //   const payload = { msg: 'command processing generates error' }
+    //   const expectedConsumerOffset = '4'
+    //
+    //   const message = {
+    //     key: sagaId,
+    //     value: JSON.stringify({
+    //       messageLabel: command,
+    //       messagePayload: payload,
+    //     }),
+    //   }
+    //   const fakeExecutor = sinon.fake.throws()
+    //   const fakeErrorHandler = (sagaId, error, commitMessage) => {
+    //     // calling the second parameter allows to commit
+    //     // (and therefore skip) current message
+    //     return commitMessage()
+    //   }
+    //
+    //   client.onCommand(command, fakeExecutor, fakeErrorHandler)
+    //
+    //   await commandIssuer.send({ topic: topicsMap.cmd, messages: [message] })
+    //
+    //   // wait that the message has been received and processed
+    //   do {
+    //     await sleep(300)
+    //   }
+    //   while (fakeExecutor.callCount < 1)
+    //
+    //   assert.ok(fakeExecutor.calledOnce, 'Only one command has been received')
+    //   assert.ok(fakeExecutor.calledWith(sagaId, payload))
+    //
+    //   const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
+    //   assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
+    //   assert.equal(consumerOffsets[0].offset, expectedConsumerOffset,
+    //     `Message is committed anyway, since the error handler returns true (ok to skip this message)`)
+    //
+    //   assert.end()
+    // })
+    //
+    // t.test('execute command - generate error - no error handler', async assert => {
+    //   const command = 'performActionNoErrorHandler'
+    //   const sagaId = '0cc05ec1-edb0-4b80-abc0-e5183f92b26d'
+    //   const payload = { msg: 'command processing generates error' }
+    //   const expectedConsumerOffset = '4'
+    //
+    //   const message = {
+    //     key: sagaId,
+    //     value: JSON.stringify({
+    //       messageLabel: command,
+    //       messagePayload: payload,
+    //     }),
+    //   }
+    //   const fakeExecutor = sinon.fake.throws()
+    //
+    //   client.onCommand(command, fakeExecutor)
+    //
+    //   await commandIssuer.send({ topic: topicsMap.cmd, messages: [message] })
+    //
+    //   // wait that the message has been received and processed
+    //   do {
+    //     await sleep(300)
+    //   }
+    //   while (fakeExecutor.callCount < 1)
+    //
+    //   assert.ok(fakeExecutor.calledOnce, 'Only one command has been received')
+    //   assert.ok(fakeExecutor.calledWith(sagaId, payload))
+    //
+    //   const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
+    //   assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
+    //   assert.equal(consumerOffsets[0].offset, expectedConsumerOffset,
+    //     'Error processing message -> offset has not changed from previous value')
+    //
+    //   assert.end()
+    // })
 
     t.end()
   })
 
-  t.test('emit event', async assert => {
-    const event = 'eventCreated'
-    const sagaId = 'ca6fb0ae-8cec-4b09-99d5-34e30f09ef1f'
-    const metadata = { msg: 'a new event has been emitted' }
-
-    const expectedMessages = [
-      {
-        key: sagaId,
-        value: {
-          messageLabel: event,
-          messagePayload: metadata,
-        },
-      },
-    ]
-
-    const {
-      waitForReception,
-      messagesReceived,
-      stopTestConsumer,
-    } = await kafkaCommon.messagesReceiver(kafkaInstance, topicsMap.evn, expectedMessages.length)
-
-    const log = pino({ level: conf.LOG_LEVEL || 'silent' })
-    const client = new FlowManagerClient(
-      log,
-      {
-        kafkaConf,
-        components: {
-          eventsEmitter: {
-            producerConf: {},
-            eventsTopic: topicsMap.evn,
-          },
-        },
-      },
-    )
-    assert.teardown(async() => {
-      await client.stop()
-      await stopTestConsumer()
-    })
-
-    await client.start()
-
-    await client.emit(event, sagaId, metadata)
-    await waitForReception
-
-    assertMessages(assert, messagesReceived, expectedMessages)
-    assert.end()
-  })
-
-  t.test('execute command and emit event', async assert => {
-    const commandIssuer = await kafkaCommon.createProducer(kafkaInstance)
-
-    const command = 'performAction'
-    const sagaId = 'd7cddc1b-393d-4827-a2ae-ae8d311c2372'
-    const payload = { msg: 'new command and event' }
-    const event = 'eventAfterCommand'
-
-    const commandMessage = {
-      key: sagaId,
-      value: JSON.stringify({
-        messageLabel: command,
-        messagePayload: payload,
-      }),
-    }
-    const eventMessage = [
-      {
-        key: sagaId,
-        value: {
-          messageLabel: event,
-          messagePayload: payload,
-        },
-      },
-    ]
-
-    const {
-      waitForReception,
-      messagesReceived,
-      stopTestConsumer,
-    } = await kafkaCommon.messagesReceiver(kafkaInstance, topicsMap.evn, eventMessage.length)
-
-    const fakeExecutor = async(sagaId, metadata, testEmitter) => { await testEmitter(event, metadata) }
-    const fakeMetrics = {
-      commandsExecuted: { inc: sinon.fake() },
-      eventsEmitted: { inc: sinon.fake() },
-    }
-
-    const log = pino({ level: conf.LOG_LEVEL || 'silent' })
-    const client = new FlowManagerClient(
-      log,
-      {
-        kafkaConf,
-        components: {
-          commandsExecutor: {
-            consumerConf,
-            commandsTopic: topicsMap.cmd,
-          },
-          eventsEmitter: {
-            producerConf: {},
-            eventsTopic: topicsMap.evn,
-          },
-        },
-      },
-      fakeMetrics,
-    )
-    assert.teardown(async() => {
-      await stopTestConsumer()
-      await commandIssuer.disconnect()
-    })
-
-    client.onCommand(command, fakeExecutor)
-
-    await client.start()
-
-    await commandIssuer.send({ topic: topicsMap.cmd, messages: [commandMessage] })
-
-    await waitForReception
-    assertMessages(assert, messagesReceived, eventMessage)
-
-    // wait for reception
-    await client.stop()
-
-    assert.equal(fakeMetrics.commandsExecuted.inc.callCount, 1, 'only subscribed commands are executed')
-    assert.equal(fakeMetrics.eventsEmitted.inc.callCount, 1)
-
-    assert.end()
-  })
-
-  t.test('error returned when running components not configured', async assert => {
-    const log = pino({ level: conf.LOG_LEVEL || 'silent' })
-    const client = new FlowManagerClient(
-      log,
-      {
-        kafkaConf,
-        components: {},
-      },
-    )
-    assert.teardown(async() => { await client.stop() })
-
-    assert.throws(
-      () => client.onCommand('cmd', sinon.fake()),
-      new Error('commands executor component not configured')
-    )
-
-    // just to show that in case of undefined components this operation behaves as a no-op
-    await client.start()
-
-    assert.rejects(
-      client.emit('evn', 'sagaId'),
-      new Error('events emitter component not configured')
-    )
-    assert.end()
-  })
-
-  t.test('test client healthiness and readiness in the different life phases', async assert => {
-    const log = pino({ level: conf.LOG_LEVEL || 'silent' })
-    const client = new FlowManagerClient(
-      log,
-      {
-        kafkaConf,
-        components: {
-          commandsExecutor: {
-            consumerConf,
-            commandsTopic: conf.KAFKA_CMD_TOPIC,
-          },
-          eventsEmitter: {
-            producerConf: {},
-            eventsTopic: conf.KAFKA_EVN_TOPIC,
-          },
-        },
-      },
-    )
-
-    assert.equal(client.isHealthy(), true, 'Client created but not started')
-    assert.equal(client.isReady(), false, 'Client created but not started')
-
-    await client.start()
-
-    assert.equal(client.isHealthy(), true, 'Client started')
-    assert.equal(client.isReady(), true, 'Client started')
-
-    await client.stop()
-    await sleep(300)
-
-    assert.equal(client.isHealthy(), false, 'Client stopped')
-    assert.equal(client.isReady(), false, 'Client stopped')
-
-    assert.end()
-  })
-
-  t.test('test stopping client with disconnection error', async assert => {
-    const log = pino({ level: conf.LOG_LEVEL || 'silent' })
-    const client = new FlowManagerClient(
-      log,
-      {
-        kafkaConf,
-        components: {
-          commandsExecutor: {
-            consumerConf,
-            commandsTopic: conf.KAFKA_CMD_TOPIC,
-          },
-        },
-      },
-    )
-
-    sinon.stub(client.consumer, 'disconnect').throws()
-
-    await client.stop()
-    assert.equal(client.isHealthy(), false)
-
-    assert.end()
-  })
+  // t.test('emit event', async assert => {
+  //   const event = 'eventCreated'
+  //   const sagaId = 'ca6fb0ae-8cec-4b09-99d5-34e30f09ef1f'
+  //   const metadata = { msg: 'a new event has been emitted' }
+  //
+  //   const expectedMessages = [
+  //     {
+  //       key: sagaId,
+  //       value: {
+  //         messageLabel: event,
+  //         messagePayload: metadata,
+  //       },
+  //     },
+  //   ]
+  //
+  //   const {
+  //     waitForReception,
+  //     messagesReceived,
+  //     stopTestConsumer,
+  //   } = await kafkaCommon.messagesReceiver(kafkaInstance, topicsMap.evn, expectedMessages.length)
+  //
+  //   const log = pino({ level: conf.LOG_LEVEL || 'silent' })
+  //   const client = new FlowManagerClient(
+  //     log,
+  //     {
+  //       kafkaConf,
+  //       components: {
+  //         eventsEmitter: {
+  //           producerConf: {},
+  //           eventsTopic: topicsMap.evn,
+  //         },
+  //       },
+  //     },
+  //   )
+  //   assert.teardown(async() => {
+  //     await client.stop()
+  //     await stopTestConsumer()
+  //   })
+  //
+  //   await client.start()
+  //
+  //   await client.emit(event, sagaId, metadata)
+  //   await waitForReception
+  //
+  //   assertMessages(assert, messagesReceived, expectedMessages)
+  //   assert.end()
+  // })
+  //
+  // t.test('execute command and emit event', async assert => {
+  //   const commandIssuer = await kafkaCommon.createProducer(kafkaInstance)
+  //
+  //   const command = 'performAction'
+  //   const sagaId = 'd7cddc1b-393d-4827-a2ae-ae8d311c2372'
+  //   const payload = { msg: 'new command and event' }
+  //   const event = 'eventAfterCommand'
+  //
+  //   const commandMessage = {
+  //     key: sagaId,
+  //     value: JSON.stringify({
+  //       messageLabel: command,
+  //       messagePayload: payload,
+  //     }),
+  //   }
+  //   const eventMessage = [
+  //     {
+  //       key: sagaId,
+  //       value: {
+  //         messageLabel: event,
+  //         messagePayload: payload,
+  //       },
+  //     },
+  //   ]
+  //
+  //   const {
+  //     waitForReception,
+  //     messagesReceived,
+  //     stopTestConsumer,
+  //   } = await kafkaCommon.messagesReceiver(kafkaInstance, topicsMap.evn, eventMessage.length)
+  //
+  //   const fakeExecutor = async(sagaId, metadata, testEmitter) => { await testEmitter(event, metadata) }
+  //   const fakeMetrics = {
+  //     commandsExecuted: { inc: sinon.fake() },
+  //     eventsEmitted: { inc: sinon.fake() },
+  //   }
+  //
+  //   const log = pino({ level: conf.LOG_LEVEL || 'silent' })
+  //   const client = new FlowManagerClient(
+  //     log,
+  //     {
+  //       kafkaConf,
+  //       components: {
+  //         commandsExecutor: {
+  //           consumerConf,
+  //           commandsTopic: topicsMap.cmd,
+  //         },
+  //         eventsEmitter: {
+  //           producerConf: {},
+  //           eventsTopic: topicsMap.evn,
+  //         },
+  //       },
+  //     },
+  //     fakeMetrics,
+  //   )
+  //   assert.teardown(async() => {
+  //     await stopTestConsumer()
+  //     await commandIssuer.disconnect()
+  //   })
+  //
+  //   client.onCommand(command, fakeExecutor)
+  //
+  //   await client.start()
+  //
+  //   await commandIssuer.send({ topic: topicsMap.cmd, messages: [commandMessage] })
+  //
+  //   await waitForReception
+  //   assertMessages(assert, messagesReceived, eventMessage)
+  //
+  //   // wait for reception
+  //   await client.stop()
+  //
+  //   assert.equal(fakeMetrics.commandsExecuted.inc.callCount, 1, 'only subscribed commands are executed')
+  //   assert.equal(fakeMetrics.eventsEmitted.inc.callCount, 1)
+  //
+  //   assert.end()
+  // })
+  //
+  // t.test('error returned when running components not configured', async assert => {
+  //   const log = pino({ level: conf.LOG_LEVEL || 'silent' })
+  //   const client = new FlowManagerClient(
+  //     log,
+  //     {
+  //       kafkaConf,
+  //       components: {},
+  //     },
+  //   )
+  //   assert.teardown(async() => { await client.stop() })
+  //
+  //   assert.throws(
+  //     () => client.onCommand('cmd', sinon.fake()),
+  //     new Error('commands executor component not configured')
+  //   )
+  //
+  //   // just to show that in case of undefined components this operation behaves as a no-op
+  //   await client.start()
+  //
+  //   assert.rejects(
+  //     client.emit('evn', 'sagaId'),
+  //     new Error('events emitter component not configured')
+  //   )
+  //   assert.end()
+  // })
+  //
+  // t.test('test client healthiness and readiness in the different life phases', async assert => {
+  //   const log = pino({ level: conf.LOG_LEVEL || 'silent' })
+  //   const client = new FlowManagerClient(
+  //     log,
+  //     {
+  //       kafkaConf,
+  //       components: {
+  //         commandsExecutor: {
+  //           consumerConf,
+  //           commandsTopic: conf.KAFKA_CMD_TOPIC,
+  //         },
+  //         eventsEmitter: {
+  //           producerConf: {},
+  //           eventsTopic: conf.KAFKA_EVN_TOPIC,
+  //         },
+  //       },
+  //     },
+  //   )
+  //
+  //   assert.equal(client.isHealthy(), true, 'Client created but not started')
+  //   assert.equal(client.isReady(), false, 'Client created but not started')
+  //
+  //   await client.start()
+  //
+  //   assert.equal(client.isHealthy(), true, 'Client started')
+  //   assert.equal(client.isReady(), true, 'Client started')
+  //
+  //   await client.stop()
+  //   await sleep(300)
+  //
+  //   assert.equal(client.isHealthy(), false, 'Client stopped')
+  //   assert.equal(client.isReady(), false, 'Client stopped')
+  //
+  //   assert.end()
+  // })
+  //
+  // t.test('test stopping client with disconnection error', async assert => {
+  //   const log = pino({ level: conf.LOG_LEVEL || 'silent' })
+  //   const client = new FlowManagerClient(
+  //     log,
+  //     {
+  //       kafkaConf,
+  //       components: {
+  //         commandsExecutor: {
+  //           consumerConf,
+  //           commandsTopic: conf.KAFKA_CMD_TOPIC,
+  //         },
+  //       },
+  //     },
+  //   )
+  //
+  //   sinon.stub(client.consumer, 'disconnect').throws()
+  //
+  //   await client.stop()
+  //   assert.equal(client.isHealthy(), false)
+  //
+  //   assert.end()
+  // })
 
   t.end()
 })

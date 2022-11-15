@@ -31,6 +31,7 @@ export interface KafkaConfig {
   connectionTimeout?: number
   authenticationTimeout?: number
   connectionRetries?: number
+  maxWaitTimeInMs?: number
 }
 
 export interface ConsumerConfig {

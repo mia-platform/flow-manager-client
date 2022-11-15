@@ -36,6 +36,7 @@ async function initializeKafkaClient(config) {
     logLevel: logLevel.ERROR,
     logCreator: PinoLogCreator,
     retry: 10,
+    maxWaitTimeInMs: 1000,
   })
 
   const admin = kafka.admin()

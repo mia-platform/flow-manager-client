@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- client `maxWaitTimeInMs` is now configurable with default 1000
+
 ## [1.0.4] 2022-10-26
 
 ### Changed
