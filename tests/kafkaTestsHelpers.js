@@ -36,7 +36,6 @@ async function initializeKafkaClient(config) {
     logLevel: logLevel.ERROR,
     logCreator: PinoLogCreator,
     retry: 10,
-    maxWaitTimeInMs: 1000,
   })
 
   const admin = kafka.admin()
@@ -90,7 +89,6 @@ async function createConsumer(kafka, topic, fromBeginning = true) {
     groupId: `group-id-local-${randomString(15)}`,
     allowAutoTopicCreation: true,
     retry: { retries: 10 },
-    maxWaitTimeInMs: 1000,
   })
   await consumer.connect()
   await consumer.subscribe({ topic, fromBeginning })
