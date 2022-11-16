@@ -84,7 +84,7 @@ consumerConfig = {
   rebalanceTimeout: { type: 'integer', default: 60000 },
   heartbeatInterval: { type: 'integer', default: 3000 },
   allowAutoTopicCreation: { type: 'boolean', default: false },
-  maxWaitTimeInMs: { type: 'integer', default: 1000, description: 'The maximum amount of time in milliseconds the server will block before answering the fetch request if there isn’t sufficient data to immediately satisfy the requirement given by minBytes'}
+  maxWaitTimeInMs: { type: 'integer', default: 500, description: 'The maximum amount of time in milliseconds the server will block before answering the fetch request if there isn’t sufficient data to immediately satisfy the requirement given by minBytes'}
 }
 
 producerConfig = {
