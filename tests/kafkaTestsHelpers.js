@@ -43,8 +43,8 @@ async function initializeKafkaClient(config) {
   await admin.createTopics({
     waitForLeaders: true,
     topics: [
-      { topic: KAFKA_CMD_TOPIC },
-      { topic: KAFKA_EVN_TOPIC },
+      { topic: KAFKA_CMD_TOPIC, numPartitions: 1 },
+      { topic: KAFKA_EVN_TOPIC, numPartitions: 1 },
     ].filter(({ topic }) => Boolean(topic)),
   })
 
@@ -55,7 +55,7 @@ async function initializeKafkaClient(config) {
       evn: KAFKA_EVN_TOPIC,
     },
     getConsumerOffsets: async(groupId, topic) => {
-      return admin.fetchOffsets({ groupId, topic })
+      return admin.fetchOffsets({ groupId, topics: [topic] })
     },
     kafkaTeardown: async() => {
       try {

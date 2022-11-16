@@ -94,9 +94,13 @@ tap.test('Flow Manager Client', async t => {
       assert.ok(fakeExecutor.calledOnce, 'Only one command has been received')
       assert.ok(fakeExecutor.calledWith(sagaId, payload))
 
-      const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
-      assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
-      assert.equal(consumerOffsets[0].offset, expectedConsumerOffset, 'First message to be processed and committed')
+      await assertConsumerOffset(
+        assert,
+        consumerGroup,
+        topicsMap.cmd,
+        expectedConsumerOffset,
+        'First message to be processed and committed'
+      )
 
       assert.end()
     })
@@ -119,9 +123,13 @@ tap.test('Flow Manager Client', async t => {
       await sleep(300)
       assert.ok(fakeExecutor.notCalled, 'No command requested to be executed')
 
-      const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
-      assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
-      assert.equal(consumerOffsets[0].offset, expectedConsumerOffset, 'Wrong Message skipped and committed')
+      await assertConsumerOffset(
+        assert,
+        consumerGroup,
+        topicsMap.cmd,
+        expectedConsumerOffset,
+        'Wrong Message skipped and committed'
+      )
 
       assert.end()
     })
@@ -144,9 +152,13 @@ tap.test('Flow Manager Client', async t => {
       await sleep(300)
       assert.ok(fakeExecutor.notCalled, 'No command requested to be executed')
 
-      const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
-      assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
-      assert.equal(consumerOffsets[0].offset, expectedConsumerOffset, 'Wrong Message skipped and committed')
+      await assertConsumerOffset(
+        assert,
+        consumerGroup,
+        topicsMap.cmd,
+        expectedConsumerOffset,
+        'Wrong Message skipped and committed'
+      )
 
       assert.end()
     })
@@ -184,10 +196,13 @@ tap.test('Flow Manager Client', async t => {
       assert.ok(fakeExecutor.calledOnce, 'Only one command has been received')
       assert.ok(fakeExecutor.calledWith(sagaId, payload))
 
-      const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
-      assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
-      assert.equal(consumerOffsets[0].offset, expectedConsumerOffset,
-        `Message is committed anyway, since the error handler returns true (ok to skip this message)`)
+      await assertConsumerOffset(
+        assert,
+        consumerGroup,
+        topicsMap.cmd,
+        expectedConsumerOffset,
+        'Message is committed anyway, since the error handler returns true (ok to skip this message)'
+      )
 
       assert.end()
     })
@@ -220,10 +235,13 @@ tap.test('Flow Manager Client', async t => {
       assert.ok(fakeExecutor.calledOnce, 'Only one command has been received')
       assert.ok(fakeExecutor.calledWith(sagaId, payload))
 
-      const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
-      assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
-      assert.equal(consumerOffsets[0].offset, expectedConsumerOffset,
-        'Error processing message -> offset has not changed from previous value')
+      await assertConsumerOffset(
+        assert,
+        consumerGroup,
+        topicsMap.cmd,
+        expectedConsumerOffset,
+        'Error processing message -> offset has not changed from previous value'
+      )
 
       assert.end()
     })
@@ -441,6 +459,13 @@ tap.test('Flow Manager Client', async t => {
 
     assert.end()
   })
+
+  async function assertConsumerOffset(tapInstance, consumerGroup, topic, expectedOffset, assertMsg) {
+    const consumerOffsets = await getConsumerOffsets(consumerGroup, topic)
+    tapInstance.equal(consumerOffsets.length, 1, 'Consumer is connected to only one topic')
+    tapInstance.equal(consumerOffsets[0].partitions.length, 1, 'Only one partition is available in connected topic')
+    tapInstance.equal(consumerOffsets[0].partitions[0].offset, expectedOffset, assertMsg)
+  }
 
   t.end()
 })
