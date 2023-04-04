@@ -117,8 +117,13 @@ async function runConsumer({ consumer, messagesReceived, expectedMsgCount, minMs
     eachMessage: async({ message }) => {
       const key = message.key.toString()
       const value = JSON.parse(message.value.toString())
+      const { headers } = message
+      const parsedHeaders = {}
+      for (const [headerKey, headerValue] of Object.entries(headers)) {
+        parsedHeaders[headerKey] = headerValue.toString()
+      }
 
-      messagesReceived.push({ key, value })
+      messagesReceived.push({ key, value, headers: parsedHeaders })
       if (messagesReceived.length >= expectedMsgCount) {
         confirmReception()
       }
