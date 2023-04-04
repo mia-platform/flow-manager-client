@@ -26,7 +26,7 @@ const { sleep, assertMessages } = kafkaCommon
 
 const getConfig = require('./getConfig')
 
-const FlowManagerClient = require('../lib/client')
+const { FlowManagerClient } = require('../lib/client')
 
 tap.test('Flow Manager Client', async t => {
   const conf = getConfig()
