@@ -19,7 +19,9 @@
   "dependencies": {
     "@mia-platform/kafkajs-pino-logger": "^1.0.0",
     "ajv": "^8.11.0",
-    "kafkajs": "^1.16.0"
+    "kafkajs": "^1.16.0",
+    "lodash.isundefined": "^3.0.1",
+    "lodash.omitby": "^4.6.0"
   },
   "devDependencies": {
     "@mia-platform/eslint-config-mia": "^3.0.0",
