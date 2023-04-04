@@ -92,3 +92,8 @@ export interface FlowManagerClient {
 
   emit(event: string, sagaId: string, metadata?: Record<string, any>, headers?: Record<string, any>): Promise<void>
 }
+
+//
+// Utility
+//
+export function getMiaHeaders(headers: Record<string, any>): Record<string, string>
