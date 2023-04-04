@@ -1,60 +1,6 @@
-<div align="center">
-
-# Flow Manager Client
-
-[![Build Status][github-actions-svg]][github-actions]
-[![javascript style guide][standard-mia-svg]][standard-mia]
-[![Coverage Status][coverall-svg]][coverall-io]
-
-</div>
+# Overview
 
 This library simplifies the interaction between a generic microservice and the [Flow Manager](https://docs.mia-platform.eu/docs/runtime_suite/flow-manager-service/overview) service.
-
-## Installation
-
-```
-npm i --save @mia-platform/flow-manager-client
-```
-
-## Testing locally
-
-#### Create a network connection
-
-```
-docker network create app --driver bridge
-```
-
-#### Pull the images
-```
-docker pull bitnami/zookeeper
-docker pull bitnami/kafka
-```
-
-#### Run the images
-```
-docker run -d --rm --name zookeeper --network=app -e ALLOW_ANONYMOUS_LOGIN=yes -p 2180:2181 bitnami/zookeeper
-
-docker run --rm \
-  --network app \
-  --name=kafka \
-  -e KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181 \
-  -e KAFKA_CFG_ADVERTISED_LISTENERS='PLAINTEXT://127.0.0.1:9092,INTERNAL://localhost:9093' \
-  -e KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP='PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT' \
-  -e KAFKA_CFG_LISTENERS='PLAINTEXT://0.0.0.0:9092,INTERNAL://0.0.0.0:9093' \
-  -e KAFKA_INTER_BROKER_LISTENER_NAME='INTERNAL' \
-  -e ALLOW_PLAINTEXT_LISTENER=yes \
-  -p 2181:2181 \
-  -p 443:9092 \
-  -p 9092:9092 \
-  -p 9093:9093 \
-  bitnami/kafka
-```
-
-#### Run tests
-
-```
-npm test
-```
 
 ## Configuration
 
@@ -74,7 +20,7 @@ kafkaConfig = {
   username: { type: 'string', nullable: true },
   password: { type: 'string', nullable: true },
   connectionTimeout: { type: 'integer', default: 10000, description: 'milliseconds' },
-  authenticationTimeout: { type: 'integer', default: 10000, description: 'milliseconds' }
+  authenticationTimeout: { type: 'integer', default: 10000, description: 'milliseconds' },
   connectionRetries: { type: 'integer', default: 5, description: 'number of times the client should try to connect'}
 }
 
@@ -104,7 +50,7 @@ const client = new FMClientBuilder(pinoLogger, kafkaConfig)
 // define which action should be exected when the specified command is received
 client.onCommand(
   'COMMAND',
-  async (sagaId, metadata, emitEvent) => { /* do something*/ },
+  async (sagaId, metadata, emitEvent, heartbeat, headers) => { /* do something*/ },
   async (sagaId, error, commit) =>  {
     /* do something else */
 
@@ -114,7 +60,7 @@ client.onCommand(
 
 await client.start()
 
-await client.emit('EVENT', sagaId, metadata)
+await client.emit('EVENT', sagaId, metadata, headers)
 
 await client.stop()
 ```
@@ -141,8 +87,8 @@ It is also possible to define an error handler which takes as input the processi
 
 Here is reported the signature of the two methods associated to a command:
 
-- `commandFunction -> [async] Function(sagaId: string, commandMetadata: Object, emitEvent: function, heartbeat: function)`
-- `errorHandler -> [async] Function(sagaId: string, error: Error, commit: async Function)`
+- **commandFunction** -> `[async] Function(sagaId: string, commandMetadata: Object, emitEvent: function, heartbeat: function, headers: Object)`
+- **errorHandler** -> `[async] Function(sagaId: string, error: Error, commit: async Function)`
 
 **Notes:**
 - before executing a command, a parsing step is carried out. In case the command message can not be
@@ -150,15 +96,15 @@ parsed as a Flow Manager message (e.g. the key does not contain any _sagaId_ or 
   the processing of that message is skipped altogether.
 - when a command is handled, it is also provided the possibility to emit a new event to notify the end of command execution.
   This is achieved by calling the `emitEvent` function given as argument of the `commandFunction`.
-  Its signature is `emitEvent(event, metadata)`. In this case `sagaId` is not needed since it exploits the same of executed command. 
+  Its signature is `emitEvent(event, metadata, headers, options)`. By default Mia headers from command are forwarded, you can disable this feature with the option `isMiaHeaderInjected` set to `false`. In this case `sagaId` is not needed since it exploits the same of executed command.
 - by default error risen during the processing step cause messages to be retried until the
-execution is successful. This behaviour can be fine in case the command action is _idempotent_
+execution is successful. This behavior can be fine in case the command action is _idempotent_
   or its repetition does not cause potential conflicts.
   In order to change it and *skip messages* whose processing throw an error,
   it is sufficient to call the `commit` function within the error handler.
   That function is provided as a parameter to the error handler, in conjunction with the processing error.
 
-#### `async emit(event, sagaId, metadata)`
+#### `async emit(event, sagaId, metadata, headers)`
 _emit_ allows to publish a new message in the _events_ topic. It can throw in case sending a message results in a failure.
 
 #### `isHealthy()`
@@ -208,7 +154,7 @@ const client = new FMClientBuilder(pinoLogger, kafkaConfig)
 // expose metrics afterwards
 ```
 
-**Note:** users of [`custom-plugin-lib`](https://github.com/mia-platform/custom-plugin-lib)
+**Note:** users of [`custom-plugin-lib`](https://docs.mia-platform.eu/docs/runtime_suite_libraries/custom-plugin-lib/apidoc)
 can directly expose the `getMetrics` function and find these metrics decorated
 in the service `customMetrics` object.
 
@@ -238,12 +184,12 @@ module.exports = customService(async function index(service) {
 module.exports.getMetrics = getMetrics
 ```
 
+## Utility
 
-[standard-mia-svg]: https://img.shields.io/badge/code_style-standard--mia-orange.svg
-[standard-mia]: https://github.com/mia-platform/eslint-config-mia
+The library exports a set of utilities that can be used:
 
-[coverall-svg]: https://coveralls.io/repos/github/mia-platform/flow-manager-client/badge.svg?branch=main
-[coverall-io]: https://coveralls.io/github/mia-platform/flow-manager-client
+- `getMiaHeaders` -> given a set of headers, returns Mia headers
 
-[github-actions-svg]: https://github.com/mia-platform/flow-manager-client/actions/workflows/node.js.yml/badge.svg
-[github-actions]: https://github.com/mia-platform/flow-manager-client/actions
+```javascript
+const { getMiaHeaders } = require('@mia-platform/flow-manager-client')
+```

@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- headers when writing message
+- headers when reading message
+- `getMiaHeaders` function
+
 ## [1.0.4] 2022-10-26
 
 ### Changed

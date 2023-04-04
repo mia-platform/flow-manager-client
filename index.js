@@ -17,5 +17,6 @@
 'use strict'
 
 const { FMClientBuilder, getMetrics } = require('./lib/builder')
+const { getMiaHeaders } = require('./lib/client')
 
-module.exports = { FMClientBuilder, getMetrics }
+module.exports = { FMClientBuilder, getMetrics, getMiaHeaders }

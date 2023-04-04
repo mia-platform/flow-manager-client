@@ -50,7 +50,7 @@ const client = new FMClientBuilder(pinoLogger, kafkaConfig)
 // define which action should be exected when the specified command is received
 client.onCommand(
   'COMMAND',
-  async (sagaId, metadata, emitEvent) => { /* do something*/ },
+  async (sagaId, metadata, emitEvent, heartbeat, headers) => { /* do something*/ },
   async (sagaId, error, commit) =>  {
     /* do something else */
 
@@ -60,7 +60,7 @@ client.onCommand(
 
 await client.start()
 
-await client.emit('EVENT', sagaId, metadata)
+await client.emit('EVENT', sagaId, metadata, headers)
 
 await client.stop()
 ```
@@ -87,8 +87,8 @@ It is also possible to define an error handler which takes as input the processi
 
 Here is reported the signature of the two methods associated to a command:
 
-- `commandFunction -> [async] Function(sagaId: string, commandMetadata: Object, emitEvent: function)`
-- `errorHandler -> [async] Function(sagaId: string, error: Error, commit: async Function)`
+- **commandFunction** -> `[async] Function(sagaId: string, commandMetadata: Object, emitEvent: function, heartbeat: function, headers: Object)`
+- **errorHandler** -> `[async] Function(sagaId: string, error: Error, commit: async Function)`
 
 **Notes:**
 - before executing a command, a parsing step is carried out. In case the command message can not be
@@ -96,7 +96,7 @@ parsed as a Flow Manager message (e.g. the key does not contain any _sagaId_ or 
   the processing of that message is skipped altogether.
 - when a command is handled, it is also provided the possibility to emit a new event to notify the end of command execution.
   This is achieved by calling the `emitEvent` function given as argument of the `commandFunction`.
-  Its signature is `emitEvent(event, metadata)`. In this case `sagaId` is not needed since it exploits the same of executed command. 
+  Its signature is `emitEvent(event, metadata, headers, options)`. By default Mia headers from command are forwarded, you can disable this feature with the option `isMiaHeaderInjected` set to `false`. In this case `sagaId` is not needed since it exploits the same of executed command.
 - by default error risen during the processing step cause messages to be retried until the
 execution is successful. This behavior can be fine in case the command action is _idempotent_
   or its repetition does not cause potential conflicts.
@@ -104,7 +104,7 @@ execution is successful. This behavior can be fine in case the command action is
   it is sufficient to call the `commit` function within the error handler.
   That function is provided as a parameter to the error handler, in conjunction with the processing error.
 
-#### `async emit(event, sagaId, metadata)`
+#### `async emit(event, sagaId, metadata, headers)`
 _emit_ allows to publish a new message in the _events_ topic. It can throw in case sending a message results in a failure.
 
 #### `isHealthy()`
@@ -182,4 +182,14 @@ module.exports = customService(async function index(service) {
 // Note: flow-manager-client getMetrics function can be extended
 // to include further metrics to be used in service
 module.exports.getMetrics = getMetrics
+```
+
+## Utility
+
+The library exports a set of utilities that can be used:
+
+- `getMiaHeaders` -> given a set of headers, returns Mia headers
+
+```javascript
+const { getMiaHeaders } = require('@mia-platform/flow-manager-client')
 ```

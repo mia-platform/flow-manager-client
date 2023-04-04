@@ -26,7 +26,7 @@ const { sleep, assertMessages } = kafkaCommon
 
 const getConfig = require('./getConfig')
 
-const FlowManagerClient = require('../lib/client')
+const { FlowManagerClient } = require('../lib/client')
 
 tap.test('Flow Manager Client', async t => {
   const conf = getConfig()
@@ -243,6 +243,7 @@ tap.test('Flow Manager Client', async t => {
           messageLabel: event,
           messagePayload: metadata,
         },
+        headers: {},
       },
     ]
 
@@ -301,6 +302,7 @@ tap.test('Flow Manager Client', async t => {
           messageLabel: event,
           messagePayload: payload,
         },
+        headers: {},
       },
     ]
 
@@ -311,6 +313,187 @@ tap.test('Flow Manager Client', async t => {
     } = await kafkaCommon.messagesReceiver(kafkaInstance, topicsMap.evn, eventMessage.length)
 
     const fakeExecutor = async(sagaId, metadata, testEmitter) => { await testEmitter(event, metadata) }
+    const fakeMetrics = {
+      commandsExecuted: { inc: sinon.fake() },
+      eventsEmitted: { inc: sinon.fake() },
+    }
+
+    const log = pino({ level: conf.LOG_LEVEL || 'silent' })
+    const client = new FlowManagerClient(
+      log,
+      {
+        kafkaConf,
+        components: {
+          commandsExecutor: {
+            consumerConf,
+            commandsTopic: topicsMap.cmd,
+          },
+          eventsEmitter: {
+            producerConf: {},
+            eventsTopic: topicsMap.evn,
+          },
+        },
+      },
+      fakeMetrics,
+    )
+    assert.teardown(async() => {
+      await stopTestConsumer()
+      await commandIssuer.disconnect()
+    })
+
+    client.onCommand(command, fakeExecutor)
+
+    await client.start()
+
+    await commandIssuer.send({ topic: topicsMap.cmd, messages: [commandMessage] })
+
+    await waitForReception
+    assertMessages(assert, messagesReceived, eventMessage)
+
+    // wait for reception
+    await client.stop()
+
+    assert.equal(fakeMetrics.commandsExecuted.inc.callCount, 1, 'only subscribed commands are executed')
+    assert.equal(fakeMetrics.eventsEmitted.inc.callCount, 1)
+
+    assert.end()
+  })
+
+  t.test('execute command and emit event forwarding Mia and custom headers', async assert => {
+    const commandIssuer = await kafkaCommon.createProducer(kafkaInstance)
+
+    const command = 'performAction'
+    const sagaId = 'd7cddc1b-393d-4827-a2ae-ae8d311c2372'
+    const payload = { msg: 'new command and event' }
+    const event = 'eventAfterCommand'
+    const miaHeaders = {
+      miauserid: 'userid',
+      isbackoffice: 'is-backoffice',
+    }
+    const customHeaders = {
+      newHeader: 'value',
+    }
+
+    const commandMessage = {
+      key: sagaId,
+      value: JSON.stringify({
+        messageLabel: command,
+        messagePayload: payload,
+      }),
+      headers: miaHeaders,
+    }
+    const eventMessage = [
+      {
+        key: sagaId,
+        value: {
+          messageLabel: event,
+          messagePayload: payload,
+        },
+        headers: {
+          ...miaHeaders,
+          ...customHeaders,
+        },
+      },
+    ]
+
+    const {
+      waitForReception,
+      messagesReceived,
+      stopTestConsumer,
+    } = await kafkaCommon.messagesReceiver(kafkaInstance, topicsMap.evn, eventMessage.length)
+
+    const fakeExecutor = async(sagaId, metadata, testEmitter) => {
+      await testEmitter(event, metadata, customHeaders)
+    }
+    const fakeMetrics = {
+      commandsExecuted: { inc: sinon.fake() },
+      eventsEmitted: { inc: sinon.fake() },
+    }
+
+    const log = pino({ level: conf.LOG_LEVEL || 'silent' })
+    const client = new FlowManagerClient(
+      log,
+      {
+        kafkaConf,
+        components: {
+          commandsExecutor: {
+            consumerConf,
+            commandsTopic: topicsMap.cmd,
+          },
+          eventsEmitter: {
+            producerConf: {},
+            eventsTopic: topicsMap.evn,
+          },
+        },
+      },
+      fakeMetrics,
+    )
+    assert.teardown(async() => {
+      await stopTestConsumer()
+      await commandIssuer.disconnect()
+    })
+
+    client.onCommand(command, fakeExecutor)
+
+    await client.start()
+
+    await commandIssuer.send({ topic: topicsMap.cmd, messages: [commandMessage] })
+
+    await waitForReception
+    assertMessages(assert, messagesReceived, eventMessage)
+
+    // wait for reception
+    await client.stop()
+
+    assert.equal(fakeMetrics.commandsExecuted.inc.callCount, 1, 'only subscribed commands are executed')
+    assert.equal(fakeMetrics.eventsEmitted.inc.callCount, 1)
+
+    assert.end()
+  })
+
+  t.test('execute command and emit event forwarding custom headers', async assert => {
+    const commandIssuer = await kafkaCommon.createProducer(kafkaInstance)
+
+    const command = 'performAction'
+    const sagaId = 'd7cddc1b-393d-4827-a2ae-ae8d311c2372'
+    const payload = { msg: 'new command and event' }
+    const event = 'eventAfterCommand'
+    const miaHeaders = {
+      miauserid: 'userid',
+      isbackoffice: 'is-backoffice',
+    }
+    const customHeaders = {
+      newHeader: 'value',
+    }
+
+    const commandMessage = {
+      key: sagaId,
+      value: JSON.stringify({
+        messageLabel: command,
+        messagePayload: payload,
+      }),
+      headers: miaHeaders,
+    }
+    const eventMessage = [
+      {
+        key: sagaId,
+        value: {
+          messageLabel: event,
+          messagePayload: payload,
+        },
+        headers: customHeaders,
+      },
+    ]
+
+    const {
+      waitForReception,
+      messagesReceived,
+      stopTestConsumer,
+    } = await kafkaCommon.messagesReceiver(kafkaInstance, topicsMap.evn, eventMessage.length)
+
+    const fakeExecutor = async(sagaId, metadata, testEmitter) => {
+      await testEmitter(event, metadata, customHeaders, { isMiaHeaderInjected: false })
+    }
     const fakeMetrics = {
       commandsExecuted: { inc: sinon.fake() },
       eventsEmitted: { inc: sinon.fake() },
