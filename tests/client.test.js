@@ -35,6 +35,7 @@ tap.test('Flow Manager Client', async t => {
     topicsMap,
     kafkaTeardown,
     getConsumerOffsets,
+    setCmdTopicPartitions,
   } = await kafkaCommon.initializeKafkaClient(conf)
 
   const kafkaConf = { clientId: conf.KAFKA_CLIENT_ID, brokers: conf.KAFKA_BROKERS_LIST }
@@ -224,6 +225,175 @@ tap.test('Flow Manager Client', async t => {
       assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
       assert.equal(consumerOffsets[0].offset, expectedConsumerOffset,
         'Error processing message -> offset has not changed from previous value')
+
+      assert.end()
+    })
+
+    t.end()
+  })
+
+  t.test('execute command with partitionsConsumedConcurrently > 1', async t => {
+    const commandIssuer = await kafkaCommon.createProducer(kafkaInstance)
+    await setCmdTopicPartitions(2)
+
+    const log = pino({ level: conf.LOG_LEVEL || 'silent' })
+
+    t.teardown(async() => {
+      await commandIssuer.disconnect()
+    })
+
+    t.test('execute commands in 2 partition sequentially if partitionsConsumedConcurrently is 1', async assert => {
+      const client = new FlowManagerClient(
+        log,
+        {
+          kafkaConf,
+          components: {
+            commandsExecutor: {
+              consumerConf,
+              commandsTopic: topicsMap.cmd,
+              partitionsConsumedConcurrently: 1,
+            },
+          },
+        },
+      )
+      await client.start()
+
+      assert.teardown(async() => {
+        await client.stop()
+      })
+
+      const command1 = 'command1'
+      const sagaId1 = 'sagaId1'
+      const command2 = 'command2'
+      const sagaId2 = 'sagaId2'
+      const payload = { msg: 'a new command has been issued' }
+
+      const messages = [
+        {
+          key: sagaId1,
+          value: JSON.stringify({
+            messageLabel: command1,
+            messagePayload: payload,
+          }),
+          partition: 0,
+        }, {
+          key: sagaId2,
+          value: JSON.stringify({
+            messageLabel: command2,
+            messagePayload: payload,
+          }),
+          partition: 1,
+        },
+      ]
+
+      let start1, end1, start2, end2
+      const executor1 = async() => {
+        start1 = Date.now()
+        await sleep(2000)
+        end1 = Date.now()
+      }
+      const executor2 = async() => {
+        start2 = Date.now()
+        await sleep(2000)
+        end2 = Date.now()
+      }
+
+      client.onCommand(command1, executor1)
+      client.onCommand(command2, executor2)
+
+      await commandIssuer.send({ topic: topicsMap.cmd, messages })
+
+      // wait that the messages have been received and processed
+      let whileCondition
+      do {
+        await sleep(300)
+        whileCondition = !(end1 && end2)
+      } while (whileCondition)
+
+      const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
+      assert.equal(consumerOffsets.length, 2, 'Two partitions are available')
+
+      const firsExecutedEnd = start1 < start2 ? end1 : end2
+      const secondExecutedStart = start1 < start2 ? start2 : start1
+      const sequentialCondition = firsExecutedEnd < secondExecutedStart
+      assert.ok(sequentialCondition, 'Both commands have been executed sequentially')
+
+      assert.end()
+    })
+
+    t.test('execute commands in 2 partition concurrently if partitionsConsumedConcurrently is 2', async assert => {
+      const client = new FlowManagerClient(
+        log,
+        {
+          kafkaConf,
+          components: {
+            commandsExecutor: {
+              consumerConf,
+              commandsTopic: topicsMap.cmd,
+              partitionsConsumedConcurrently: 2,
+            },
+          },
+        },
+      )
+      await client.start()
+
+      assert.teardown(async() => {
+        await client.stop()
+      })
+
+      const command1 = 'command1'
+      const sagaId1 = 'sagaId1'
+      const command2 = 'command2'
+      const sagaId2 = 'sagaId2'
+      const payload = { msg: 'a new command has been issued' }
+
+      const messages = [
+        {
+          key: sagaId1,
+          value: JSON.stringify({
+            messageLabel: command1,
+            messagePayload: payload,
+          }),
+          partition: 0,
+        }, {
+          key: sagaId2,
+          value: JSON.stringify({
+            messageLabel: command2,
+            messagePayload: payload,
+          }),
+          partition: 1,
+        },
+      ]
+
+      let start1, end1, start2, end2
+      const executor1 = async() => {
+        start1 = Date.now()
+        await sleep(2000)
+        end1 = Date.now()
+      }
+      const executor2 = async() => {
+        start2 = Date.now()
+        await sleep(2000)
+        end2 = Date.now()
+      }
+
+      client.onCommand(command1, executor1)
+      client.onCommand(command2, executor2)
+
+      await commandIssuer.send({ topic: topicsMap.cmd, messages })
+
+      // wait that the messages have been received and processed
+      let whileCondition
+      do {
+        await sleep(300)
+        whileCondition = !(end1 && end2)
+      } while (whileCondition)
+
+      const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
+      assert.equal(consumerOffsets.length, 2, 'Two partitions are available')
+
+      const parallelCondition = start1 < end2 && start2 < end1
+      assert.ok(parallelCondition, 'Both commands have been executed in parallel')
 
       assert.end()
     })

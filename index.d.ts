@@ -52,7 +52,11 @@ export class FMClientBuilder {
 
   constructor(log: Record<string, any>, kafkaConfig: KafkaConfig)
 
-  configureCommandsExecutor(commandsTopic: string, consumerConfig: ConsumerConfig): FMClientBuilder
+  configureCommandsExecutor(
+      commandsTopic: string,
+      consumerConfig: ConsumerConfig,
+      partitionsConsumedConcurrently?: number
+  ): FMClientBuilder
 
   configureEventsEmitter(eventsTopic: string, producerConfig?: ProducerConfig): FMClientBuilder
 

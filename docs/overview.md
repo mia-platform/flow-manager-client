@@ -43,7 +43,7 @@ Example:
 const { FMClientBuilder } = require('@mia-platform/flow-manager-client')
 
 const client = new FMClientBuilder(pinoLogger, kafkaConfig)
-  .configureCommandsExecutor(commandsTopic, consumerConf)
+  .configureCommandsExecutor(commandsTopic, consumerConf, partitionsConsumedConcurrently)
   .configureEventsEmitter(eventsTopic, producerConf)
   .build()
 

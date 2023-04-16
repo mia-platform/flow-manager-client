@@ -39,7 +39,7 @@ tap.test('Flow Manager Client Builder', async t => {
   t.test('initialize a client with both components', async assert => {
     const log = pino({ level: conf.LOG_LEVEL || 'silent' })
     const client = new FMClientBuilder(log, kafkaConf)
-      .configureCommandsExecutor(conf.KAFKA_CMD_TOPIC, consumerConf)
+      .configureCommandsExecutor(conf.KAFKA_CMD_TOPIC, consumerConf, 3)
       .configureEventsEmitter(conf.KAFKA_EVN_TOPIC, producerConf)
       .build()
     assert.teardown(async() => {

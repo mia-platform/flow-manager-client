@@ -74,7 +74,7 @@ kafkaConfig = {
   username: { type: 'string', nullable: true },
   password: { type: 'string', nullable: true },
   connectionTimeout: { type: 'integer', default: 10000, description: 'milliseconds' },
-  authenticationTimeout: { type: 'integer', default: 10000, description: 'milliseconds' }
+  authenticationTimeout: { type: 'integer', default: 10000, description: 'milliseconds' },
   connectionRetries: { type: 'integer', default: 5, description: 'number of times the client should try to connect'}
 }
 
@@ -97,7 +97,7 @@ Example:
 const { FMClientBuilder } = require('@mia-platform/flow-manager-client')
 
 const client = new FMClientBuilder(pinoLogger, kafkaConfig)
-  .configureCommandsExecutor(commandsTopic, consumerConf)
+  .configureCommandsExecutor(commandsTopic, consumerConf, partitionsConsumedConcurrently)
   .configureEventsEmitter(eventsTopic, producerConf)
   .build()
 
@@ -157,6 +157,8 @@ execution is successful. This behaviour can be fine in case the command action i
   In order to change it and *skip messages* whose processing throw an error,
   it is sufficient to call the `commit` function within the error handler.
   That function is provided as a parameter to the error handler, in conjunction with the processing error.
+- by default commands are read sequentially but, if you have multiple partitions assigned to the same client, you can set the partitionsConsumedConcurrently property of the commandExecutor to parallelize the execution of the commands in different partitions. This can improve performances if the command consists of asynchronous work. For reference: [Partition-aware concurrency](https://kafka.js.org/docs/consuming#partition-aware-concurrency)
+
 
 #### `async emit(event, sagaId, metadata)`
 _emit_ allows to publish a new message in the _events_ topic. It can throw in case sending a message results in a failure.
