@@ -28,7 +28,7 @@ const getConfig = require('./getConfig')
 
 const FlowManagerClient = require('../lib/client')
 
-tap.test('Flow Manager Client', async t => {
+tap.only('Flow Manager Client', async t => {
   const conf = getConfig()
   const {
     kafkaInstance,
@@ -236,6 +236,9 @@ tap.test('Flow Manager Client', async t => {
     const commandIssuer = await kafkaCommon.createProducer(kafkaInstance)
     await setCmdTopicPartitions(2)
 
+    // let kafka reassign partitions to the consumer
+    await sleep(1000)
+
     const log = pino({ level: conf.LOG_LEVEL || 'silent' })
 
     t.teardown(async() => {
@@ -320,7 +323,7 @@ tap.test('Flow Manager Client', async t => {
       assert.end()
     })
 
-    t.only('execute commands in 2 partition concurrently if partitionsConsumedConcurrently is 2', async assert => {
+    t.test('execute commands in 2 partition concurrently if partitionsConsumedConcurrently is 2', async assert => {
       const client = new FlowManagerClient(
         log,
         {
