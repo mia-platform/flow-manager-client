@@ -28,7 +28,7 @@ const getConfig = require('./getConfig')
 
 const FlowManagerClient = require('../lib/client')
 
-tap.only('Flow Manager Client', async t => {
+tap.test('Flow Manager Client', async t => {
   const conf = getConfig()
   const {
     kafkaInstance,
