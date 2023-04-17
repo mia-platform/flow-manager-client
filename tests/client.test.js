@@ -242,6 +242,30 @@ tap.test('Flow Manager Client', async t => {
       await commandIssuer.disconnect()
     })
 
+    const command1 = 'command1'
+    const sagaId1 = 'sagaId1'
+    const command2 = 'command2'
+    const sagaId2 = 'sagaId2'
+    const payload = { msg: 'a new command has been issued' }
+
+    const messages = [
+      {
+        key: sagaId1,
+        value: JSON.stringify({
+          messageLabel: command1,
+          messagePayload: payload,
+        }),
+        partition: 0,
+      }, {
+        key: sagaId2,
+        value: JSON.stringify({
+          messageLabel: command2,
+          messagePayload: payload,
+        }),
+        partition: 1,
+      },
+    ]
+
     t.test('execute commands in 2 partition sequentially if partitionsConsumedConcurrently is 1', async assert => {
       const client = new FlowManagerClient(
         log,
@@ -261,30 +285,6 @@ tap.test('Flow Manager Client', async t => {
       assert.teardown(async() => {
         await client.stop()
       })
-
-      const command1 = 'command1'
-      const sagaId1 = 'sagaId1'
-      const command2 = 'command2'
-      const sagaId2 = 'sagaId2'
-      const payload = { msg: 'a new command has been issued' }
-
-      const messages = [
-        {
-          key: sagaId1,
-          value: JSON.stringify({
-            messageLabel: command1,
-            messagePayload: payload,
-          }),
-          partition: 0,
-        }, {
-          key: sagaId2,
-          value: JSON.stringify({
-            messageLabel: command2,
-            messagePayload: payload,
-          }),
-          partition: 1,
-        },
-      ]
 
       let start1, end1, start2, end2
       const executor1 = async() => {
@@ -340,30 +340,6 @@ tap.test('Flow Manager Client', async t => {
       assert.teardown(async() => {
         await client.stop()
       })
-
-      const command1 = 'command1'
-      const sagaId1 = 'sagaId1'
-      const command2 = 'command2'
-      const sagaId2 = 'sagaId2'
-      const payload = { msg: 'a new command has been issued' }
-
-      const messages = [
-        {
-          key: sagaId1,
-          value: JSON.stringify({
-            messageLabel: command1,
-            messagePayload: payload,
-          }),
-          partition: 0,
-        }, {
-          key: sagaId2,
-          value: JSON.stringify({
-            messageLabel: command2,
-            messagePayload: payload,
-          }),
-          partition: 1,
-        },
-      ]
 
       let start1, end1, start2, end2
       const executor1 = async() => {
