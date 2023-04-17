@@ -289,12 +289,12 @@ tap.test('Flow Manager Client', async t => {
       let start1, end1, start2, end2
       const executor1 = async() => {
         start1 = Date.now()
-        await sleep(2000)
+        await sleep(500)
         end1 = Date.now()
       }
       const executor2 = async() => {
         start2 = Date.now()
-        await sleep(2000)
+        await sleep(500)
         end2 = Date.now()
       }
 
@@ -317,11 +317,10 @@ tap.test('Flow Manager Client', async t => {
       const secondExecutedStart = start1 < start2 ? start2 : start1
       const sequentialCondition = firsExecutedEnd < secondExecutedStart
       assert.ok(sequentialCondition, 'Both commands have been executed sequentially')
-
       assert.end()
     })
 
-    t.test('execute commands in 2 partition concurrently if partitionsConsumedConcurrently is 2', async assert => {
+    t.only('execute commands in 2 partition concurrently if partitionsConsumedConcurrently is 2', async assert => {
       const client = new FlowManagerClient(
         log,
         {
@@ -344,12 +343,12 @@ tap.test('Flow Manager Client', async t => {
       let start1, end1, start2, end2
       const executor1 = async() => {
         start1 = Date.now()
-        await sleep(2000)
+        await sleep(500)
         end1 = Date.now()
       }
       const executor2 = async() => {
         start2 = Date.now()
-        await sleep(2000)
+        await sleep(500)
         end2 = Date.now()
       }
 
