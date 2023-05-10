@@ -70,11 +70,11 @@ export type EventEmitter = (event: string, metadata?: Record<string, any>) => Pr
 
 export type Heartbeat = () => Promise<void>
 
-export type CommandExecutor<Payload extends PayloadGeneric = PayloadGeneric> = (sagaId: string, payload: Payload, eventEmitter: EventEmitter, heartbeat: Heartbeat) => void
+export type CommandExecutor<Payload extends PayloadGeneric = PayloadGeneric> = (sagaId: string, payload: Payload, eventEmitter: EventEmitter, heartbeat: Heartbeat) => Promise<void> | void
 
 export type CommitCallback = () => Promise<void>
 
-export type CommandErrorHandler = (sagaId: string, error: Error, commitCallback: CommitCallback) => void
+export type CommandErrorHandler = (sagaId: string, error: Error, commitCallback: CommitCallback) => Promise<void> | void
 
 export interface FlowManagerClient {
   log: Record<string, any>
