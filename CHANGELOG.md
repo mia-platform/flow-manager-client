@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix command executor type. Now it can also return a promise, making it async
+
 ## [1.0.4] 2022-10-26
 
 ### Changed
