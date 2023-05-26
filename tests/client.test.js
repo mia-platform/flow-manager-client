@@ -269,6 +269,26 @@ tap.test('Flow Manager Client', async t => {
       },
     ]
 
+    function getOrderedTimes(start1, end1, start2, end2) {
+      return start1 < start2
+        ? {
+          firsExecutedStart: start1,
+          firsExecutedEnd: end1,
+          secondExecutedStart: start2,
+          secondExecutedEnd: end2,
+        }
+        : {
+          firsExecutedStart: start2,
+          firsExecutedEnd: end2,
+          secondExecutedStart: start1,
+          secondExecutedEnd: end1,
+        }
+    }
+
+    const sleep1 = 500
+    const sleep2 = 500
+    const sleepSum = sleep1 + sleep2
+
     t.test('execute commands in 2 partition sequentially if partitionsConsumedConcurrently is 1', async assert => {
       const client = new FlowManagerClient(
         log,
@@ -292,12 +312,12 @@ tap.test('Flow Manager Client', async t => {
       let start1, end1, start2, end2
       const executor1 = async() => {
         start1 = Date.now()
-        await sleep(500)
+        await sleep(sleep1)
         end1 = Date.now()
       }
       const executor2 = async() => {
         start2 = Date.now()
-        await sleep(500)
+        await sleep(sleep2)
         end2 = Date.now()
       }
 
@@ -316,10 +336,19 @@ tap.test('Flow Manager Client', async t => {
       const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
       assert.equal(consumerOffsets.length, 2, 'Two partitions are available')
 
-      const firsExecutedEnd = start1 < start2 ? end1 : end2
-      const secondExecutedStart = start1 < start2 ? start2 : start1
+      const {
+        firsExecutedStart,
+        firsExecutedEnd,
+        secondExecutedStart,
+        secondExecutedEnd,
+      } = getOrderedTimes(start1, end1, start2, end2)
+
       const sequentialCondition = firsExecutedEnd < secondExecutedStart
       assert.ok(sequentialCondition, 'Both commands have been executed sequentially')
+
+      const totalTime = secondExecutedEnd - firsExecutedStart
+      assert.ok(totalTime > sleepSum, 'The time is greater than the sum of the two sleep intervals')
+
       assert.end()
     })
 
@@ -346,12 +375,12 @@ tap.test('Flow Manager Client', async t => {
       let start1, end1, start2, end2
       const executor1 = async() => {
         start1 = Date.now()
-        await sleep(500)
+        await sleep(sleep1)
         end1 = Date.now()
       }
       const executor2 = async() => {
         start2 = Date.now()
-        await sleep(500)
+        await sleep(sleep2)
         end2 = Date.now()
       }
 
@@ -370,8 +399,18 @@ tap.test('Flow Manager Client', async t => {
       const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
       assert.equal(consumerOffsets.length, 2, 'Two partitions are available')
 
-      const parallelCondition = start1 < end2 && start2 < end1
+      const {
+        firsExecutedStart,
+        firsExecutedEnd,
+        secondExecutedStart,
+        secondExecutedEnd,
+      } = getOrderedTimes(start1, end1, start2, end2)
+
+      const parallelCondition = firsExecutedEnd > secondExecutedStart
       assert.ok(parallelCondition, 'Both commands have been executed in parallel')
+
+      const totalTime = secondExecutedEnd - firsExecutedStart
+      assert.ok(totalTime < sleepSum, 'The time is less than the sum of the two sleep intervals')
 
       assert.end()
     })
