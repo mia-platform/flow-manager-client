@@ -10,18 +10,18 @@ npm i --save @mia-platform/flow-manager-client
 
 #### Create a network connection
 
-```
+```shell
 docker network create app --driver bridge
 ```
 
 #### Pull the images
-```
+```shell
 docker pull bitnami/zookeeper
 docker pull bitnami/kafka
 ```
 
 #### Run the images
-```
+```shell
 docker run -d --rm --name zookeeper --network=app -e ALLOW_ANONYMOUS_LOGIN=yes -p 2180:2181 bitnami/zookeeper
 
 docker run --rm \
@@ -42,6 +42,12 @@ docker run --rm \
 
 #### Run tests
 
-```
+```shell
 npm test
+```
+
+#### Clear docker
+```shell
+docker kill zookeeper
+docker network rm app
 ```

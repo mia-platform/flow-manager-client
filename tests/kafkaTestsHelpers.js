@@ -68,6 +68,16 @@ async function initializeKafkaClient(config) {
         // ignore errors in test
       }
     },
+    setCmdTopicPartitions: async(count) => {
+      await admin.createPartitions({
+        topicPartitions: [
+          {
+            topic: KAFKA_CMD_TOPIC,
+            count,
+          },
+        ],
+      })
+    },
   }
 }
 

@@ -35,6 +35,7 @@ tap.test('Flow Manager Client', async t => {
     topicsMap,
     kafkaTeardown,
     getConsumerOffsets,
+    setCmdTopicPartitions,
   } = await kafkaCommon.initializeKafkaClient(conf)
 
   const kafkaConf = { clientId: conf.KAFKA_CLIENT_ID, brokers: conf.KAFKA_BROKERS_LIST }
@@ -224,6 +225,192 @@ tap.test('Flow Manager Client', async t => {
       assert.equal(consumerOffsets.length, 1, 'Only one partition is available')
       assert.equal(consumerOffsets[0].offset, expectedConsumerOffset,
         'Error processing message -> offset has not changed from previous value')
+
+      assert.end()
+    })
+
+    t.end()
+  })
+
+  t.test('execute command with partitionsConsumedConcurrently > 1', async t => {
+    const commandIssuer = await kafkaCommon.createProducer(kafkaInstance)
+    await setCmdTopicPartitions(2)
+
+    // let kafka reassign partitions to the consumer
+    await sleep(1000)
+
+    const log = pino({ level: conf.LOG_LEVEL || 'silent' })
+
+    t.teardown(async() => {
+      await commandIssuer.disconnect()
+    })
+
+    const command1 = 'command1'
+    const sagaId1 = 'sagaId1'
+    const command2 = 'command2'
+    const sagaId2 = 'sagaId2'
+    const payload = { msg: 'a new command has been issued' }
+
+    const messages = [
+      {
+        key: sagaId1,
+        value: JSON.stringify({
+          messageLabel: command1,
+          messagePayload: payload,
+        }),
+        partition: 0,
+      }, {
+        key: sagaId2,
+        value: JSON.stringify({
+          messageLabel: command2,
+          messagePayload: payload,
+        }),
+        partition: 1,
+      },
+    ]
+
+    function getOrderedTimes(start1, end1, start2, end2) {
+      return start1 < start2
+        ? {
+          firsExecutedStart: start1,
+          firsExecutedEnd: end1,
+          secondExecutedStart: start2,
+          secondExecutedEnd: end2,
+        }
+        : {
+          firsExecutedStart: start2,
+          firsExecutedEnd: end2,
+          secondExecutedStart: start1,
+          secondExecutedEnd: end1,
+        }
+    }
+
+    const sleep1 = 500
+    const sleep2 = 500
+    const sleepSum = sleep1 + sleep2
+
+    t.test('execute commands in 2 partition sequentially if partitionsConsumedConcurrently is 1', async assert => {
+      const client = new FlowManagerClient(
+        log,
+        {
+          kafkaConf,
+          components: {
+            commandsExecutor: {
+              consumerConf,
+              commandsTopic: topicsMap.cmd,
+              partitionsConsumedConcurrently: 1,
+            },
+          },
+        },
+      )
+      await client.start()
+
+      assert.teardown(async() => {
+        await client.stop()
+      })
+
+      let start1, end1, start2, end2
+      const executor1 = async() => {
+        start1 = Date.now()
+        await sleep(sleep1)
+        end1 = Date.now()
+      }
+      const executor2 = async() => {
+        start2 = Date.now()
+        await sleep(sleep2)
+        end2 = Date.now()
+      }
+
+      client.onCommand(command1, executor1)
+      client.onCommand(command2, executor2)
+
+      await commandIssuer.send({ topic: topicsMap.cmd, messages })
+
+      // wait that the messages have been received and processed
+      let whileCondition
+      do {
+        await sleep(300)
+        whileCondition = !(end1 && end2)
+      } while (whileCondition)
+
+      const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
+      assert.equal(consumerOffsets.length, 2, 'Two partitions are available')
+
+      const {
+        firsExecutedStart,
+        firsExecutedEnd,
+        secondExecutedStart,
+        secondExecutedEnd,
+      } = getOrderedTimes(start1, end1, start2, end2)
+
+      const sequentialCondition = firsExecutedEnd < secondExecutedStart
+      assert.ok(sequentialCondition, 'Both commands have been executed sequentially')
+
+      const totalTime = secondExecutedEnd - firsExecutedStart
+      assert.ok(totalTime > sleepSum, 'The time is greater than the sum of the two sleep intervals')
+
+      assert.end()
+    })
+
+    t.test('execute commands in 2 partition concurrently if partitionsConsumedConcurrently is 2', async assert => {
+      const client = new FlowManagerClient(
+        log,
+        {
+          kafkaConf,
+          components: {
+            commandsExecutor: {
+              consumerConf,
+              commandsTopic: topicsMap.cmd,
+              partitionsConsumedConcurrently: 2,
+            },
+          },
+        },
+      )
+      await client.start()
+
+      assert.teardown(async() => {
+        await client.stop()
+      })
+
+      let start1, end1, start2, end2
+      const executor1 = async() => {
+        start1 = Date.now()
+        await sleep(sleep1)
+        end1 = Date.now()
+      }
+      const executor2 = async() => {
+        start2 = Date.now()
+        await sleep(sleep2)
+        end2 = Date.now()
+      }
+
+      client.onCommand(command1, executor1)
+      client.onCommand(command2, executor2)
+
+      await commandIssuer.send({ topic: topicsMap.cmd, messages })
+
+      // wait that the messages have been received and processed
+      let whileCondition
+      do {
+        await sleep(300)
+        whileCondition = !(end1 && end2)
+      } while (whileCondition)
+
+      const consumerOffsets = await getConsumerOffsets(consumerGroup, topicsMap.cmd)
+      assert.equal(consumerOffsets.length, 2, 'Two partitions are available')
+
+      const {
+        firsExecutedStart,
+        firsExecutedEnd,
+        secondExecutedStart,
+        secondExecutedEnd,
+      } = getOrderedTimes(start1, end1, start2, end2)
+
+      const parallelCondition = firsExecutedEnd > secondExecutedStart
+      assert.ok(parallelCondition, 'Both commands have been executed in parallel')
+
+      const totalTime = secondExecutedEnd - firsExecutedStart
+      assert.ok(totalTime < sleepSum, 'The time is less than the sum of the two sleep intervals')
 
       assert.end()
     })
