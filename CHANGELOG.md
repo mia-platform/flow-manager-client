@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- changed log level of command not executed because is not expected from WARN to DEBUG
+
 ## [1.1.1] 2023-06-15
 
 ### Changed
