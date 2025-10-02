@@ -5,6 +5,10 @@
   "license": "SEE LICENSE IN LICENSE",
   "main": "index.js",
   "types": "index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mia-platform/flow-manager-client.git"
+  },
   "scripts": {
     "checkonly": "! grep -R '\\\\.only' tests/",
     "coverage": "npm run unit -- --coverage-report=text-summary",
